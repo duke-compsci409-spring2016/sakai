@@ -257,7 +257,7 @@ public class AssignmentAction extends PagedResourceActionII
 	private static final String CALENDAR = "calendar";
 	
 	/** Additional calendar service */
-	private static final String ADDITIONAL_CALENDAR = "additional_calendar";
+	private static final String ADDITIONAL_CALENDAR = "additonal_calendar";
 	
 	/** The calendar tool */
 	private static final String CALENDAR_TOOL_EXIST = "calendar_tool_exisit";

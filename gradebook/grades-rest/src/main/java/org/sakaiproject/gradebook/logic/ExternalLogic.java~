@@ -239,7 +239,7 @@ public class ExternalLogic {
             name = userDirectoryService.getUser(userId).getDisplayName();
         } catch (UserNotDefinedException e) {
             log.warn("Cannot get user displayname for id: " + userId);
-            name = "-------";
+            name = "--------";
         }
         return name;
     }
