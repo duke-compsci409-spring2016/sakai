@@ -48,6 +48,8 @@ import org.sakaiproject.tool.gradebook.Gradebook;
 import org.sakaiproject.tool.gradebook.business.GradebookManager;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
+//innocuous comment here!
+
 public class GradebookCalculationImpl extends GradebookManagerHibernateImpl implements GradebookManager 
 {
 	private static final Log log = LogFactory.getLog(GradebookCalculationImpl.class);
