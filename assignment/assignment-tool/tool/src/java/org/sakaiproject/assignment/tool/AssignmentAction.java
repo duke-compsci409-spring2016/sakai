@@ -983,7 +983,7 @@ public class AssignmentAction extends PagedResourceActionII
 		 s = SiteService.getSite((String) state.getAttribute(STATE_CONTEXT_STRING));
 		}
 		catch (IdUnusedException iue) {
-			M_log.warn(this + ":buildMainPanelContext: Site not found!" + iue.getMessage());
+			M_log.warn(this + ":buildMainPanelContext: The Site was not found!" + iue.getMessage());
 		}
 		
 		// Check whether content review service is enabled, present and enabled for this site
