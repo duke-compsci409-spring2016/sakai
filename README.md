@@ -49,7 +49,7 @@ See [our dedicated page](CONTRIBUTING.md) for more information on contributing t
 For filing bugs against Sakai please use our Jira instance: https://jira.sakaiproject.org/
 
 ## Nightly servers 
-For testing out the latest builds go to the [nightly server page](http://nightly2.sakaiproject.org)
+For testing out the latest builds go to this [nightly server page](http://nightly2.sakaiproject.org)
 
 ## Get in touch
 If you have any questions, please join the Sakai developer mailing list: To subscribe send an email to sakai-dev+subscribe@apereo.org
