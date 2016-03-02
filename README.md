@@ -1,4 +1,4 @@
-# Sakai CLE
+
 
 This is the source code for the Sakai CLE.
 
