@@ -6,7 +6,7 @@ var ltiPrefix = "lti_";
 var MATHJAX = MATHJAX || {};
 MATHJAX.isInstalled = false;
 MATHJAX.checkBoxIdPrefix = "jax-";
- 
+
 $.ajaxSetup({
   cache: false
 });
@@ -41,12 +41,12 @@ sakai.getSiteInfo = function(trigger, dialogTarget, nosd, nold){
             if (data.contactEmail) {
                 email = " (<a href=\"mailto:" + data.contactEmail.escapeHTML() + "\" id=\"email\">" + data.contactEmail.escapeHTML() + "</a>)";
             }
-            
+
             if (data.props) {
                 if (data.props['contact-name']) {
                     owner = data.props['contact-name'];
                 }
-                
+
                 if (data.props['contact-email']) {
                     email = " (<a href=\"mailto:" + data.props['contact-email'].escapeHTML() + "\" id=\"email\">" + data.props['contact-email'].escapeHTML() + "</a>)";
                 }
@@ -61,8 +61,8 @@ sakai.getSiteInfo = function(trigger, dialogTarget, nosd, nold){
             utils.endDialog(e, dialogTarget);
             return false;
         });
-        
-        
+
+
     });
 };
 
@@ -74,13 +74,13 @@ sakai.getSiteInfo = function(trigger, dialogTarget, nosd, nold){
 sakai.getGroupInfo = function(trigger, dialogTarget, memberstr, printstr, tablestr1,tablestr2,tablestr3){
     utils.startDialog(dialogTarget);
 	$('.' + trigger).click(function(e){
-		
+
         var id = $(this).attr('id');
         var title = $('#group' + id).html();
         var groupURL = '/direct/membership/group/' + id + '.json';
         var list = "";
         var count = 1;
-        
+
         jQuery.getJSON(groupURL, function(data){
             $.each(data.membership_collection, function(i, item){
                 list = list + "<tr><td>" + count + ")&nbsp;" + item.userSortName + "</td><td>" + item.memberRole + "</td><td><a href=\'mailto:" + item.userEmail + "\'>" + item.userEmail + "</a></td></tr>";
@@ -124,7 +124,7 @@ sakai.setupMessageListener = function(messageHolder, messageMode){
  */
 sakai.setupSelectList = function(list, allcontrol, highlightClass){
     $('#' + list + ' :checked').parent("td").parent("tr").addClass(highlightClass);
-    
+
     if ($('#' + list + ' td input:checkbox').length === 0) {
         $('#' + allcontrol).hide();
     }
@@ -139,7 +139,7 @@ sakai.setupSelectList = function(list, allcontrol, highlightClass){
         }
         utils.checkEnableUnjoin();
     });
-    
+
     $('#' + list + ' input:checkbox').click(function(){
         var someChecked = false;
         if (this.checked) {
@@ -159,7 +159,7 @@ sakai.setupSelectList = function(list, allcontrol, highlightClass){
         if ($('#' + list + ' :checked').length !== $('#' + list + ' input:checkbox').length) {
             $('#' + allcontrol).prop('checked', false);
         }
-        
+
         if ($('#' + list + '  :checked').length === $('#' + list + '  input:checkbox').length) {
             $('#' + allcontrol).prop('checked', true);
         }
@@ -168,7 +168,7 @@ sakai.setupSelectList = function(list, allcontrol, highlightClass){
 
 sakai.siteTypeSetup = function(){
     var templateControls='';
-    //from sakai.properties - json with what controls to display (and in what state) for each site type    
+    //from sakai.properties - json with what controls to display (and in what state) for each site type
     if ($('#templateControls').val() !== '') {
         templateControls = eval('(' + $('#templateControls').val() + ')');
     }
@@ -178,10 +178,10 @@ sakai.siteTypeSetup = function(){
      //the #courseSiteTypes input[type=text] contains what site types are associated with the course category
      // if there are none associated in sakai.properties, the value will be just one ('course')
      var courseSiteTypes = $('#courseSiteTypes').val().replace('[','').replace(']','').replace(/ /gi, '').split(',');
-     
+
     //uncheck site type radio
     $('input[name="itemType"]').prop('checked', false);
-    
+
     // handles clicking in "Build site from template"
     $('#copy').click(function(e){
         //open template picker
@@ -192,7 +192,7 @@ sakai.siteTypeSetup = function(){
         $('#siteTypeList').hide();
         //hide the term select used when selecting a course when building own
         $('#termList').hide();
-        //show submit button used when using templates 
+        //show submit button used when using templates
         $('#submitFromTemplate').show();
         //show submit button used when building own, disable it
         $('#submitBuildOwn').hide();
@@ -209,7 +209,7 @@ sakai.siteTypeSetup = function(){
         utils.resizeFrame('grow');
 
     });
-    
+
     $('#buildOwn').click(function(e){
         //hide template picker
         $('#templateSettings').hide();
@@ -232,17 +232,17 @@ sakai.siteTypeSetup = function(){
         $('#submitFromTemplateCourse').hide();
         //show the submit for build own
         $('#submitBuildOwn').show();
-        
+
         //hide/reset archive parts
         $('#archiveSettings').hide();
         $('#archive').prop('checked', false);
         $('#submitBuildOwn').prop('disabled', true);
         $('#submitFromArchive').hide();
 
-        
+
         utils.resizeFrame('grow');
     });
-    
+
     // handles display of "create site from archive"
     $('#archive').click(function(e){
 
@@ -256,6 +256,7 @@ sakai.siteTypeSetup = function(){
         $('#buildOwn').prop('checked', false);
         $('#siteTypeList').hide();
         $('#termList').hide();
+        $('#siteTypeList .checkbox input').attr('checked',false)
         $('#submitBuildOwn').hide();
         $('#submitBuildOwn').prop('disabled', true);
 
@@ -269,13 +270,13 @@ sakai.siteTypeSetup = function(){
         $('#templateSettingsTitleTerm span.templateTitleTerm').hide();
         $('#submitFromTemplate').hide().prop('disabled', true);
         $('#submitFromTemplateCourse').hide();
-        
+
         utils.resizeFrame('grow');
-        
+
     });
-    
-   
-    // check for a value in the create from template non-course title 
+
+
+    // check for a value in the create from template non-course title
     // field and either enable or disable the submit, also check onblur below
     $('#siteTitleField').keyup(function(e){
         if ($(this).val().length >= 1) {
@@ -293,7 +294,7 @@ sakai.siteTypeSetup = function(){
             $('#submitFromTemplate').prop('disabled', true);
         }
     });
-    
+
     // check that user has picked a term in the term selection field
     //to enable or disable submits for create course from template
     $('#selectTermTemplate').change(function(){
@@ -302,28 +303,28 @@ sakai.siteTypeSetup = function(){
         }
         else {
             $('#submitFromTemplateCourse').prop('disabled', false);
-            
+
         }
     });
-    
-    // handler that opens a block explaining what all the options are 
+
+    // handler that opens a block explaining what all the options are
     // in the template selection (copy users, content, publish now)
     $('#fromTemplateSettingsContainer_instruction_control').click(function(){
         var pos = $(this).position();
         varContainerHeight = $('#fromTemplateSettingsContainer_instruction_body').height();
         $('#fromTemplateSettingsContainer_instruction_body').css({'top': pos.top - varContainerHeight - 20,'left': pos.left - 290}).toggle();
     });
-    // handler to 
+    // handler to
     $('#fromTemplateSettingsContainer_instruction_body').click(function(){
         $(this).fadeOut('fast');
     });
-    
+
     // handler for the template picker radio
     $('#templateList input').click(function(e){
         //what is the ID of the template site
         var selectedTemplateId = $('#templateList input[type="radio"]:checked').attr('id');
 
-        if (!selectedTemplateId){  // how likely is this? 
+        if (!selectedTemplateId){  // how likely is this?
             $('#templateSettingsTitleTerm span').hide(); // hide title for non-course sites
             $('#submitFromTemplateCourse, #submitFromTemplateCourse ').prop('disabled', true); //disable submit to create from templates
             $('#siteTitleField').attr('value', ''); // empty title input
@@ -343,7 +344,7 @@ sakai.siteTypeSetup = function(){
             $('#publishSiteWrapper input').prop('checked', false);
 
             //templateControls is a json that comes from a sakai.property
-            //it identifies for each site type, whether to show a control, and what attrs it has. 
+            //it identifies for each site type, whether to show a control, and what attrs it has.
             if (templateControls !== '') {
                 $.each(templateControls.templateControls, function(key, value){
                     if (key === type) {
@@ -421,12 +422,12 @@ sakai.siteTypeSetup = function(){
                 $('#fromTemplateSettingsContainer_instruction_body_copyUsers').show();
                 $('#fromTemplateSettingsContainer_instruction_body_copyContent').show();
             }
-            
+
             // show settings
             $('#allTemplateSettings').fadeIn('fast');
             //check to see if this template is of a type that maps to a course
-            if ($.inArray(type, courseSiteTypes) !==-1) { //either there is a mapping to what types of sites resolve to courses or a fallback to 'course'  
-                $('#submitFromTemplate').hide(); // hide the non-course submit button 
+            if ($.inArray(type, courseSiteTypes) !==-1) { //either there is a mapping to what types of sites resolve to courses or a fallback to 'course'
+                $('#submitFromTemplate').hide(); // hide the non-course submit button
                 $('#submitFromTemplateCourse').show(); // show the submit button for course
                 $('#siteTerms').show(); // show the term selector
                 $('#siteTitle').hide(); // hide the title input (Note: can an installation specify that a course can have a user generated title)?
@@ -434,7 +435,7 @@ sakai.siteTypeSetup = function(){
                 $('#siteTitleField').attr('value', ''); // void the value of the title input
             }
             // the picked template has a type that does not resolve to a course
-            else { 
+            else {
                 $('#submitFromTemplate').show(); // show non-course submit button
                 $('#submitFromTemplateCourse').hide(); // hide the course submit button
                 $('#siteTitle').show(); //show title input
@@ -444,9 +445,9 @@ sakai.siteTypeSetup = function(){
             }
       }
     });
-    
+
     // populate the blurbs about each type from the json
-    if (templateControls !== '') { 
+    if (templateControls !== '') {
         $.each(templateControls.templateControls, function(key, value){
           $('.' + key).find('.siteTypeRowBlurb').html(this.blurb);
         });
@@ -465,17 +466,17 @@ sakai.siteTypeSetup = function(){
        // toggle the UI of all the category links
        $('.siteTypeRow a .open').hide();
        $('.siteTypeRow a .closed').show();
-       // reset all categories control UI to "closed" 
+       // reset all categories control UI to "closed"
         $('.siteTypeRow a').removeClass('openDisc');
         $(this).toggleClass('openDisc');
        // display all rows belonging to this category
        $('.row' + $(this).attr('href')).fadeToggle();
        // set new category control UI some more
        $(this).find('.closed').hide();
-       $(this).find('.open').show(); 
+       $(this).find('.open').show();
        utils.resizeFrame('grow');
     });
-    
+
     // this handles selections on the site type list (trad course, project, portfolio, etc.)
     $('#siteTypeList input').click(function(e){
         if ($(this).attr('id') === 'course') {
@@ -488,7 +489,7 @@ sakai.siteTypeSetup = function(){
             {
             	$( '#submitBuildOwn' ).attr( 'disabled', false );
             }
-        	
+
             $('#termList').show();
         }
         else {
@@ -496,7 +497,7 @@ sakai.siteTypeSetup = function(){
         	$('#submitBuildOwn').prop('disabled', false);
         }
     });
-    
+
 };
 
 sakai.setupToggleAreas = function(toggler, togglee, openInit, speed){
@@ -533,7 +534,7 @@ utils.setupUtils= function(){
 		e.preventDefault();
         $(this).hide().next().fadeIn('fast');
     });
-}; 
+};
 utils.startDialog = function(dialogTarget){
     $("#" + dialogTarget).dialog({
         close: function(event, ui){
@@ -547,7 +548,7 @@ utils.startDialog = function(dialogTarget){
         draggable: true,
         closeOnEscape: true
     });
-    
+
 };
 /*
  position, open a jQuery-UI dialog, adjust the parent iframe size if any
@@ -599,7 +600,7 @@ utils.labelFor = function(elementId)
 		    return labels[i];
 	    }
     }
-	
+
 	return null;
 };
 
@@ -667,10 +668,10 @@ var setupCategTools = function(){
             }
         }
    };
-    
+
 
    var noTools = function() {
-        
+
         if ($('#toolSelectionList  ul li').length - 1 === 0)  {
             $('#toolSelectionList #toolSelectionListMessage').show();
         }
@@ -695,15 +696,15 @@ var setupCategTools = function(){
             $('#alertBox').remove();
         });
     };
-    
+
     // replace characters in tool id received from backend to allow proper DOM selection by id of target tool
     // e.g. all '.''s are replaced by _
     function normalizedId(myId) {
     	var normId = myId.replace(/\./g, '_');
     	return normId;
-    } 
-   
-    // SAK23905 adjust for different id's between toolHolder and toolSelection (except for LTI tools) 
+    }
+
+    // SAK23905 adjust for different id's between toolHolder and toolSelection (except for LTI tools)
     function denormalizeId(myId) {
 	if (myId.lastIndexOf(ltiPrefix, 0) < 0) {
 		myId = myId.replace(/\_/g, '.');
@@ -711,11 +712,11 @@ var setupCategTools = function(){
 	return myId;
     }
 
-    // SAK-16normalizedIde additional tool multiple identification characters (i.e. those beyond the base tool's name) with 
-    // underscores to allow proper selection of the tool's associated icon 
+    // SAK-16normalizedIde additional tool multiple identification characters (i.e. those beyond the base tool's name) with
+    // underscores to allow proper selection of the tool's associated icon
     function iconizedId(myId) {
         if (myId.length > 36){
-            myId = myId.substring(36);            
+            myId = myId.substring(36);
         }
     	var iconId = myId.replace(/\./g, '-') ;
     	return iconId;
@@ -751,7 +752,7 @@ var setupCategTools = function(){
                        showToolSelection(myId,200);
                        // make toolholder text bold
                        $('#toolHolder').find('input#' + denormalizeId(myId)).prop('checked', 'checked').next('label').css('font-weight', 'bold');
-                       
+
                 } else {
                         hideToolSelection(myId,100);
                         // make toolholder text normal
@@ -771,7 +772,7 @@ var setupCategTools = function(){
         var toolInstance = '';
         var thisToolCatEsc = '';
         var thisToolId = normalizedId($(this).attr('id'));
-        
+
         if (thisToolId.length > 37) {
             thisToolCat = thisToolId.substring(36) + '';
             toolInstance = ' toolInstance';
@@ -790,10 +791,10 @@ var setupCategTools = function(){
         	if ($(this).prop('disabled') !== true) {
         		removeLink = '<a href="#" class=\"removeTool ' + toolInstance + '\">x</a>';
         	}
-                        
+
     		var selId = normalizedId($(this).attr('id'));
             var iconId = iconizedId($(this).attr('id'));
-            
+
             // SAK-22384
             var mathJaxCheckBox = buildMathJaxCheckBox(this);
             var safeLabelText = $('<p></p>').text($(this).next('label').text()).html();
@@ -801,7 +802,7 @@ var setupCategTools = function(){
                     + '\"><span class=\"selectedToolTitle icon-' + iconId + '\">' + safeLabelText + "</span>"
                     + mathJaxCheckBox + "<span>" + removeLink + '</span></li>';
             $('#toolSelectionList ul').append(newListItem);
-            
+
             // append to selected tool list
         	if ($(this).prop('checked')) {
         		// make the selectiion visible
@@ -819,23 +820,23 @@ var setupCategTools = function(){
         	var parentRow = $(this).closest('li');
         	$('#toolHolder').find('#' + thisToolCatEsc).find('ul').append(parentRow);
         }
-        
+
         function buildMathJaxCheckBox(originalCheckBox)
         {
             var mathJaxCheckBox = "";
-                        
+
             if (MATHJAX.isInstalled)
             {
                 var baseToolId = originalCheckBox.id;
                 var mathJaxCheckBoxClasses = "mathJaxCheckBox";
                 var isCheckedStr = "";
-                
+
                 if (baseToolId.length > 37) // instance tool so we have to chop off the guid prefix to get the base toolId
                 {
                     baseToolId = baseToolId.substring(36);
                     mathJaxCheckBoxClasses += " mathJaxMultiTool";
                 }
-                
+
                 if ($.inArray(baseToolId, MATHJAX.initialEnabledTools) !== -1)
                 {
                     isCheckedStr = " checked ";
@@ -844,13 +845,13 @@ var setupCategTools = function(){
                         + mathJaxCheckBoxClasses + "\" id=\"" + MATHJAX.checkBoxIdPrefix + originalCheckBox.id + "\" value=\""
                         + baseToolId + "\"" + isCheckedStr + "></input></span>";
             }
-            
+
             return mathJaxCheckBox;
-            
+
         } // end buildMathJaxCheckBox()
-        
+
     });
-    
+
     // set checked/unchecked for each in list
     $('.toolGroup').each(function(){
         var countChecked = $(this).find(':checked').length;
@@ -869,7 +870,7 @@ var setupCategTools = function(){
         }
         $(this).parent('li').find('span.checkedCount').text(countChecked).show(); //$(this).parent('li').find('span.checkedCount').hide();
     });
-    
+
     $('#toolHolder a').click(function(e){
         e.preventDefault();
         if ($(this).attr('href')) {
@@ -880,8 +881,8 @@ var setupCategTools = function(){
             return false;
         }
     });
-    
-    // 
+
+    //
     $('input[name="selectedTools"][type="checkbox"]').click(function(){
         if(($(this).closest('ul').find(':checked').length === $(this).closest('ul').find('input[type="checkbox"]').length) && $(this).closest('ul').find(':checked').length > 0) {
             $('#selectAll').hide();
@@ -890,7 +891,7 @@ var setupCategTools = function(){
         else {
             $('#selectAll').show();
             $('#unSelectAll').hide();
-            
+
         }
         var count = $(this).closest('ul').find(':checked').length;
         $(this).closest('ul').parent('li').find('span.checkedCount').text(count).show();
@@ -920,7 +921,7 @@ var setupCategTools = function(){
         $('#collExpContainer a').toggle();
         utils.resizeFrame('grow');
         return false;
-    });    
+    });
     $('.selectAll').click(function(){
         if ($(this).attr('id') === "selectAll") {
             $('.sel_unsel_core em').hide();
@@ -939,9 +940,9 @@ var setupCategTools = function(){
             });
             utils.resizeFrame('grow');
         }
-        $(this).closest('li').find('span.checkedCount').text($(this).closest('li').find(':checked').length).show(); 
+        $(this).closest('li').find('span.checkedCount').text($(this).closest('li').find(':checked').length).show();
     });
-    
+
     // SAK-22384
     $(".mathJaxMultiTool").on("click", function(e)
     {
@@ -952,7 +953,7 @@ var setupCategTools = function(){
             sameToolMatches[i].checked = this.checked;
         }
     });
-    
+
     // Clicked red X on toolSelectionList
     $('.removeTool').click(function(e){
         e.preventDefault();
@@ -973,21 +974,21 @@ var setupCategTools = function(){
                 label.style.fontWeight = "normal";
             }
         }
-        
+
         // SAK-22384
         $('#' + MATHJAX.checkBoxIdPrefix + selectedId.replace("_", ".")).prop('checked',false);
-        
+
         //$(this).closest('li').addClass('highlightTool').fadeOut('fast', function(){
         //    $(this).closest('li').remove();
         //});
-        var countSelected = $('#toolHolder').find('input[type="checkbox"][value="' + selectedId + '"]').closest('ul').find(':checked').length;               
+        var countSelected = $('#toolHolder').find('input[type="checkbox"][value="' + selectedId + '"]').closest('ul').find(':checked').length;
         $('#toolHolder').find('input[type="checkbox"][id="' + selectedId + '"]').closest('ul').closest('li').find('.checkedCount').text(countSelected);
-        
+
         noTools();
     });
-	
-	
- 
+
+
+
     $('.moreInfoTool').click(function(e){
         e.preventDefault();
         var moreInfoTitle = this.getAttribute("title");
@@ -1032,14 +1033,14 @@ var setupRecentSite = function(){
                         $(this).fadeIn('1000');
                     });
                 });
-                
+
             }
         });
-        
-        
+
+
     });
 };
-if (!Array.prototype.indexOf) { 
+if (!Array.prototype.indexOf) {
     Array.prototype.indexOf = function(obj, start) {
          for (var i = (start || 0), j = this.length; i < j; i++) {
              if (this[i] === obj) { return i; }
@@ -1107,8 +1108,8 @@ function selectAll(begin, end) {
     checkboxes[i].checked = true;
     checkboxes[i].disabled = false;
     }
-    document.getElementById("selectAll"+begin).style.display = "none";    
-    document.getElementById("unselectAll"+begin).style.display = "block";    
+    document.getElementById("selectAll"+begin).style.display = "none";
+    document.getElementById("unselectAll"+begin).style.display = "block";
     enableContinueButton();
 }
 
@@ -1119,8 +1120,8 @@ function unselectAll(begin, end) {
         checkboxes[i].checked = false;
         checkboxes[i].disabled = false;
     }
-    document.getElementById("unselectAll"+begin).style.display = "none";    
-    document.getElementById("selectAll"+begin).style.display = "block";    
+    document.getElementById("unselectAll"+begin).style.display = "none";
+    document.getElementById("selectAll"+begin).style.display = "block";
     setContinueButton();
 }
 
@@ -1169,7 +1170,7 @@ function redirectBasedOnSelection(){
     }
     continueButton = document.getElementById("continueButton");
     continueButton.click();
-    document.addCourseForm.submit(); 
+    document.addCourseForm.submit();
     return false;
 }
 
