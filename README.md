@@ -6,7 +6,7 @@ This is the source code for the Sakai CLE.
 
 [![Build Status](https://travis-ci.org/sakaiproject/sakai.svg?branch=master)](https://travis-ci.org/sakaiproject/sakai)
 
-
+More edits!!
 To build Sakai you need Java 1.8 and Maven 3.2. Once you have clone a copy of this repository you can
 build it by running:
 ```
