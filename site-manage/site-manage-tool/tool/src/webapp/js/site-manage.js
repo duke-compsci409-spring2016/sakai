@@ -226,7 +226,6 @@ sakai.siteTypeSetup = function(){
         $('input[id="copy"]').prop('checked', false);
         // show the build own choices
         $('#siteTypeList').show();
-        if ($('#siteTypeList input#course').is(":checked")) $('#siteTypeList input#course').click();
         //hide the submit for creating from template and disable it
         $('#submitFromTemplate').hide().prop('disabled', true);
         // hide the submit for creating a course from template, in case it was showing
@@ -257,6 +256,7 @@ sakai.siteTypeSetup = function(){
         $('#buildOwn').prop('checked', false);
         $('#siteTypeList').hide();
         $('#termList').hide();
+        $('#siteTypeList .checkbox input').attr('checked',false)
         $('#submitBuildOwn').hide();
         $('#submitBuildOwn').prop('disabled', true);
 
