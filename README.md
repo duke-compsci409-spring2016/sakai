@@ -14,7 +14,7 @@ mvn install
 ```
 
 ## Running
-
+Some edits
 Sakai runs on Apache Tomcat 8. Download the latest version from http://tomcat.apache.org and extract the archive.
 *Note: Sakai does not work with Tomcat installed via a package from apt-get, yum or other package managers.*
 
