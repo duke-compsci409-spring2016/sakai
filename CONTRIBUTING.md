@@ -1,5 +1,7 @@
 # Contributing to Sakai
 
+This is a random change to the file. Exciting I know.
+
 Contributions to Sakai from all comers are welcome and encouraged.
 
 Please use these guidelines and the information in [README.md](README.md) to assure that your contributions are compatible with our (evolving) workflow and practices.
