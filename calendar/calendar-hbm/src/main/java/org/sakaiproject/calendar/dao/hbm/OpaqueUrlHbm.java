@@ -8,6 +8,7 @@ public class OpaqueUrlHbm implements OpaqueUrl {
 	private String calendarRef;
 	private String opaqueUUID;
 
+	/** Empty constructor **/
 	public OpaqueUrlHbm() {
 	}
 
