@@ -17,7 +17,7 @@ package org.sakaiproject.gradebook.entity;
 
 import java.util.List;
 import java.util.Vector;
-
+/* commenting here for git exercise */
 
 
 /**
@@ -50,7 +50,6 @@ public class Category {
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	public Double getWeight() {
 		return weight;
 	}
