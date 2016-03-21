@@ -1,14 +1,13 @@
 package org.sakaiproject.gradebookng.tool.panels;
 
-import org.apache.commons.lang.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.core.util.string.ComponentRenderer;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -94,7 +93,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 		};
 		title.add(new AttributeModifier("title", assignment.getName()));
-		title.add(new Label("label", assignment.getName()));
+		title.add(new Label("label", FormatHelper.abbreviateMiddle(assignment.getName())));
 
 		// set the class based on the sortOrder. May not be set for this assignment so match it
 		final GradebookPage gradebookPage = (GradebookPage) getPage();
@@ -107,7 +106,8 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 		add(title);
 
-		add(new Label("totalPoints", Model.of(assignment.getPoints())));
+		add(new Label("totalPoints", Model.of(assignment.getPoints())).add(new AttributeModifier("data-outof-label",
+				new StringResourceModel("grade.outof", null, new Object[] { assignment.getPoints() }))));
 		add(new Label("dueDate", Model.of(FormatHelper.formatDate(assignment.getDueDate(), getString("label.noduedate")))));
 
 		final WebMarkupContainer externalAppFlag = gradebookPage.buildFlagWithPopover("externalAppFlag", "");
@@ -133,7 +133,8 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 		add(gradebookPage.buildFlagWithPopover("extraCreditFlag", generateFlagPopover(HeaderFlagPopoverPanel.Flag.GRADE_ITEM_EXTRA_CREDIT))
 				.setVisible(assignment.isExtraCredit()));
-		add(gradebookPage.buildFlagWithPopover("isCountedFlag", generateFlagPopover(HeaderFlagPopoverPanel.Flag.GRADE_ITEM_COUNTED)).setVisible(assignment.isCounted()));
+		add(gradebookPage.buildFlagWithPopover("isCountedFlag", generateFlagPopover(HeaderFlagPopoverPanel.Flag.GRADE_ITEM_COUNTED))
+				.setVisible(assignment.isCounted()));
 		add(gradebookPage.buildFlagWithPopover("notCountedFlag", generateFlagPopover(HeaderFlagPopoverPanel.Flag.GRADE_ITEM_NOT_COUNTED))
 				.setVisible(!assignment.isCounted()));
 		add(gradebookPage.buildFlagWithPopover("isReleasedFlag", generateFlagPopover(HeaderFlagPopoverPanel.Flag.GRADE_ITEM_RELEASED))
@@ -171,6 +172,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 			public void onClick(final AjaxRequestTarget target) {
 				final GradebookPage gradebookPage = (GradebookPage) getPage();
 				final GbModalWindow window = gradebookPage.getAddOrEditGradeItemWindow();
+				window.setTitle(getString("heading.editgradeitem"));
 				window.setComponentToReturnFocusTo(getParentCellFor(this));
 				window.setContent(new AddOrEditGradeItemPanel(window.getContentId(), window, getModel()));
 				window.showUnloadConfirmation(false);
@@ -214,8 +216,9 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 				if (settings.isCategoriesEnabled()) {
 					try {
-						Integer order = calculateCurrentCategorizedSortOrder(assignmentId);
-						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId, (order.intValue() - 1));
+						final Integer order = calculateCurrentCategorizedSortOrder(assignmentId);
+						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId,
+								(order.intValue() - 1));
 					} catch (final Exception e) {
 						e.printStackTrace();
 						error("error reordering within category");
@@ -247,8 +250,9 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 				if (settings.isCategoriesEnabled()) {
 					try {
-						Integer order = calculateCurrentCategorizedSortOrder(assignmentId);
-						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId, (order.intValue() + 1));
+						final Integer order = calculateCurrentCategorizedSortOrder(assignmentId);
+						AssignmentColumnHeaderPanel.this.businessService.updateAssignmentCategorizedOrder(assignmentId,
+								(order.intValue() + 1));
 					} catch (final Exception e) {
 						e.printStackTrace();
 						error("error reordering within category");
@@ -281,6 +285,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 				final GradebookPage gradebookPage = (GradebookPage) getPage();
 				final GbModalWindow window = gradebookPage.getUpdateUngradedItemsWindow();
 				final UpdateUngradedItemsPanel panel = new UpdateUngradedItemsPanel(window.getContentId(), getModel(), window);
+				window.setTitle(getString("heading.updateungradeditems"));
 				window.setComponentToReturnFocusTo(getParentCellFor(this));
 				window.setContent(panel);
 				window.showUnloadConfirmation(false);
@@ -310,7 +315,7 @@ public class AssignmentColumnHeaderPanel extends Panel {
 				final GradebookPage gradebookPage = (GradebookPage) getPage();
 				final GbModalWindow window = gradebookPage.getDeleteItemWindow();
 				final DeleteItemPanel panel = new DeleteItemPanel(window.getContentId(), getModel(), window);
-
+				window.setTitle(getString("delete.label"));
 				window.setComponentToReturnFocusTo(getParentCellFor(this));
 				window.setContent(panel);
 				window.showUnloadConfirmation(false);
@@ -326,10 +331,16 @@ public class AssignmentColumnHeaderPanel extends Panel {
 			}
 		});
 
+		menu.add(new WebMarkupContainer("menuButton").add(
+				new AttributeModifier("title", new StringResourceModel("assignment.menulabel", null,
+						new Object[] { assignment.getName() }))));
+
 		add(menu);
 
+		// add abbreviation of header content to aid table accessibility
+		getParentCellFor(this).add(new AttributeModifier("abbr", assignment.getName()))
+				.add(new AttributeModifier("aria-label", assignment.getName()));
 	}
-
 
 	private Component getParentCellFor(final Component component) {
 		if (StringUtils.equals(component.getMarkupAttributes().getString("wicket:id"), "header")) {
@@ -339,16 +350,14 @@ public class AssignmentColumnHeaderPanel extends Panel {
 		}
 	}
 
-
-	private String generateFlagPopover(HeaderFlagPopoverPanel.Flag flag) {
+	private String generateFlagPopover(final HeaderFlagPopoverPanel.Flag flag) {
 		return new HeaderFlagPopoverPanel("popover", flag, this.modelData.getObject().getId()).toPopoverString();
 	}
 
-
 	/**
-	 * Get the assignment's current sort index within it's category.
-	 * If this value is null in the database, best calculate this index
-	 * from the assignments.
+	 * Get the assignment's current sort index within it's category. If this value is null in the database, best calculate this index from
+	 * the assignments.
+	 *
 	 * @param assignmentId the id of the assignment
 	 * @return the current sort index of the assignment within their category
 	 */
@@ -358,8 +367,8 @@ public class AssignmentColumnHeaderPanel extends Panel {
 
 		if (order == null) {
 			// if no categorized order for assignment, calculate one based on the default sort order
-			List<Assignment> assignments = AssignmentColumnHeaderPanel.this.businessService.getGradebookAssignments();
-			List<Long> assignmentIdsInCategory = assignments.stream()
+			final List<Assignment> assignments = AssignmentColumnHeaderPanel.this.businessService.getGradebookAssignments();
+			final List<Long> assignmentIdsInCategory = assignments.stream()
 					.filter(a -> a.getCategoryId() == assignment.getCategoryId())
 					.map(Assignment::getId)
 					.collect(Collectors.toList());

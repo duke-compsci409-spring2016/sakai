@@ -71,6 +71,7 @@ import org.sakaiproject.portal.charon.handlers.DirectToolHandler;
 import org.sakaiproject.portal.charon.handlers.ErrorDoneHandler;
 import org.sakaiproject.portal.charon.handlers.ErrorReportHandler;
 import org.sakaiproject.portal.charon.handlers.FavoritesHandler;
+import org.sakaiproject.portal.charon.handlers.GenerateBugReportHandler;
 import org.sakaiproject.portal.charon.handlers.HelpHandler;
 import org.sakaiproject.portal.charon.handlers.JoinHandler;
 import org.sakaiproject.portal.charon.handlers.LoginHandler;
@@ -1257,32 +1258,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 	{
 		Properties retval = new Properties();
 
-		// setup html information that the tool might need (skin, body on load,
-		// js includes, etc).
-
-		String headCssPortalSkin = "<link href=\"" 
-			+ PortalUtils.getCDNPath()
-			+ CSSUtils.getCssPortalSkin(skin)
-			+ PortalUtils.getCDNQuery()
-			+ "\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
-
-		String headCssToolBase = "<link href=\""
-			+ PortalUtils.getCDNPath()
-			+ CSSUtils.getCssToolBase()
-			+ PortalUtils.getCDNQuery()
-			+ "\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
-
-		if ( ! ToolUtils.isInlineRequest(req) ) {
-			headCssToolBase = headCssPortalSkin + headCssToolBase;
-		}
-
-		String headCssToolSkin = "<link href=\"" 
-			+ PortalUtils.getCDNPath()
-			+ CSSUtils.getCssToolSkin(skin)
-			+ PortalUtils.getCDNQuery()
-			+ "\" type=\"text/css\" rel=\"stylesheet\" media=\"all\" />\n";
-
-		String headCss = headCssToolBase + headCssToolSkin;
+		String headCss = CSSUtils.getCssHead(skin,ToolUtils.isInlineRequest(req));
 		
 		Editor editor = portalService.getActiveEditor(placement);
 		String preloadScript = editor.getPreloadScript() == null ? ""
@@ -1375,8 +1351,8 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		retval.setProperty("sakai.html.head", head);
 		retval.setProperty("sakai.html.head.css", headCss);
 		retval.setProperty("sakai.html.head.lang", rloader.getLocale().getLanguage());
-		retval.setProperty("sakai.html.head.css.base", headCssToolBase);
-		retval.setProperty("sakai.html.head.css.skin", headCssToolSkin);
+		req.setAttribute("sakai.html.head.css.base", CSSUtils.getCssToolBaseLink(skin,ToolUtils.isInlineRequest(req)));
+		req.setAttribute("sakai.html.head.css.skin", CSSUtils.getCssToolSkinLink(skin));
 		retval.setProperty("sakai.html.head.js", headJs.toString());
 
 		return retval;
@@ -1883,7 +1859,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 				// since we are doing logout, cancel top.login
 				topLogin = false;
 				
-				logoutWarningMessage = rloader.getString("sit_logout_warn");
+				logoutWarningMessage = ServerConfigurationService.getBoolean("portal.logout.confirmation",false)?rloader.getString("sit_logout_warn"):"";
 			}
 			rcontext.put("userIsLoggedIn", session.getUserId() != null);
 			rcontext.put("loginTopLogin", Boolean.valueOf(topLogin));
@@ -2047,6 +2023,7 @@ public class SkinnableCharonPortal extends HttpServlet implements Portal
 		addHandler(new TimeoutDialogHandler());
 		addHandler(new JoinHandler());
 		addHandler(new FavoritesHandler());
+		addHandler(new GenerateBugReportHandler());
 	}
 
 	/**

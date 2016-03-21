@@ -231,9 +231,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	/** A Storage object for persistent storage. */
 	protected Storage m_storage = null;
 
-	/** A Cache for this service - ContentResource and ContentCollection keyed by reference. */
-	protected Cache m_cache = null;
-
 	/**
 	 * The quota for content resource body bytes (in Kbytes) for any hierarchy in the /user/ or /group/ areas, or 0 if quotas are not enforced.
 	 */
@@ -539,26 +536,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	private UserDirectoryService userDirectoryService;
 	public void setUserDirectoryService(UserDirectoryService userDirectoryService) {
 		this.userDirectoryService = userDirectoryService;
-	}
-
-	/** Configuration: cache, or not. */
-	protected boolean m_caching = false;
-
-	/**
-	 * Configuration: cache, or not. 
-	 * 
-	 * @param value
-	 *        True/false
-	 */
-	public void setCaching(String value)
-	{
-		try
-		{
-			m_caching = Boolean.valueOf(value).booleanValue();
-		}
-		catch (Exception t)
-		{
-		}
 	}
 
 	/** Configuration: Do we protect attachments in sites with the site AuthZGroup. */
@@ -873,15 +850,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 
 			M_log.info("Loaded Storage as "+m_storage+" for "+this);
 
-			// make the cache
-			if (m_caching)
-			{
-				m_cache = m_memoryService
-				.newCache(
-						"org.sakaiproject.content.api.ContentHostingService.cache",
-						this, getAccessPoint(true));
-			}
-
 			// register a transient notification for resources
 			NotificationEdit edit = m_notificationService.addTransientNotification();
 
@@ -973,11 +941,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 			m_storage.close();
 		}
 		m_storage = null;
-
-		if ((m_caching) && (m_cache != null))
-		{
-			m_cache.close();
-		}
 
 		M_log.info("destroy()");
 
@@ -7056,7 +7019,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 				{
 					contentType = contentType + "; charset=" + encoding;
 				}
-				
+
 				// KNL-1316 let's see if the user already has a cached copy. Code copied and modified from Tomcat DefaultServlet.java
 				long headerValue = req.getDateHeader("If-Modified-Since");
 				if (headerValue != -1 && (lastModTime < headerValue + 1000)) {
@@ -7065,11 +7028,45 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 					return; 
 				}
 
-				ArrayList<Range> ranges = parseRange(req, res, len);
-				res.addHeader("Accept-Ranges", "bytes");
+				// If there is a direct link to the asset, no sense streaming it.
+				// Send the asset directly to the load-balancer or to the client
+				URI directLinkUri = m_storage.getDirectLink(resource);
 
-		        if (req.getHeader("Range") == null || (ranges == null) || (ranges.isEmpty())) {
-		        	
+				ArrayList<Range> ranges = parseRange(req, res, len);
+				if (directLinkUri != null || req.getHeader("Range") == null || (ranges == null) || (ranges.isEmpty())) {
+					res.addHeader("Accept-Ranges", "none");
+					res.setContentType(contentType);
+					res.addHeader("Content-Disposition", disposition);
+					// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4187336
+					if (len <= Integer.MAX_VALUE) {
+						res.setContentLength((int)len);
+					} else {
+						res.addHeader("Content-Length", Long.toString(len));
+					}
+					
+					// SAK-30455: Track event now so the direct link still records a content.read
+					eventTrackingService.post(eventTrackingService.newEvent(EVENT_RESOURCE_READ, resource.getReference(null), false));
+
+					// Bypass loading the asset and just send the user a link to it.
+					if (directLinkUri != null) {
+						if (m_serverConfigurationService.getBoolean("cloud.content.sendfile", false)) {
+							int hostLength = new String(directLinkUri.getScheme() + "://" + directLinkUri.getHost()).length();
+							String linkPath = "/sendfile" + directLinkUri.toString().substring(hostLength);
+							if (M_log.isDebugEnabled()) {
+								M_log.debug("X-Sendfile: " + linkPath);
+							}
+
+							// Nginx uses X-Accel-Redirect and Apache and others use X-Sendfile
+							res.addHeader("X-Accel-Redirect", linkPath);
+							res.addHeader("X-Sendfile", linkPath);
+							return;
+						}
+						else if (m_serverConfigurationService.getBoolean("cloud.content.directurl", true)) {
+							res.sendRedirect(directLinkUri.toString());
+							return;
+						}
+					}
+
 					// stream the content using a small buffer to keep memory managed
 					InputStream content = null;
 					OutputStream out = null;
@@ -7081,15 +7078,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 						{
 							throw new IdUnusedException(ref.getReference());
 						}
-	
-						res.setContentType(contentType);
-						res.addHeader("Content-Disposition", disposition);
-						// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4187336
- 						if (len <= Integer.MAX_VALUE){
- 							res.setContentLength((int)len);
- 						} else {
- 							res.addHeader("Content-Length", Long.toString(len));
- 						}
+
 
 						// set the buffer of the response to match what we are reading from the request
 						if (len < STREAM_BUFFER_SIZE)
@@ -7131,16 +7120,12 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 							}
 						}
 					}
-					
-					// Track event - only for full reads
-					eventTrackingService.post(eventTrackingService.newEvent(EVENT_RESOURCE_READ, resource.getReference(null), false));
-
 		        } 
 		        else 
 		        {
-		        	// Output partial content. Adapted from Apache Tomcat 5.5.27 DefaultServlet.java
-		        	
-		        	res.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+		            // Output partial content. Adapted from Apache Tomcat 5.5.27 DefaultServlet.java
+		            res.addHeader("Accept-Ranges", "bytes");
+		            res.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
 
 		            if (ranges.size() == 1) {
 
@@ -13481,6 +13466,13 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 		public void open();
 
 		/**
+		 * Get a direct link to the asset so it doesn't have to be streamed.
+		 * @param resource
+		 * @return URI or null if no direct link is available
+		 */
+		public URI getDirectLink(ContentResource resource);
+
+		/**
 		 * Get a count of all members of a collection, where 'member' means the collection
 		 * is the immediate parent of the item.  The count is not recursive and it will 
 		 * include all resources and collections whose immediate parent is the collection
@@ -14226,7 +14218,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 	private static final String MACRO_USER_EID            = "${USER_EID}";
 	private static final String MACRO_USER_FIRST_NAME     = "${USER_FIRST_NAME}";
 	private static final String MACRO_USER_LAST_NAME      = "${USER_LAST_NAME}";
-	private static final String MACRO_SESSION_ID          = "${SESSION_ID}";
 
 	private static final String MACRO_DEFAULT_ALLOWED = "${USER_ID},${USER_EID},${USER_FIRST_NAME},${USER_LAST_NAME}";
 
@@ -14243,7 +14234,7 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
      * 
      * See SAK-23587
      */
-    private String expandMacros(String url) {
+    public String expandMacros(String url) {
     	
     	if(M_log.isDebugEnabled()){
     		M_log.debug("Original url: " + url);
@@ -14290,10 +14281,6 @@ SiteContentAdvisorProvider, SiteContentAdvisorTypeRegistry, EntityTransferrerRef
 			if (macroName.equals(MACRO_USER_LAST_NAME)) {
 				return userDirectoryService.getCurrentUser().getLastName();
 			}
-			if (macroName.equals(MACRO_SESSION_ID)) {
-				return sessionManager.getCurrentSession().getId();
-			}
-
 		}
 		catch (Exception e) {
 			M_log.error("Error resolving macro:" + macroName + ": " + e.getClass() + ": " + e.getCause());

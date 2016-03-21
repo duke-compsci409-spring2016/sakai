@@ -2,12 +2,16 @@ package org.sakaiproject.gradebookng.business.util;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 
+import lombok.extern.apachecommons.CommonsLog;
+
+@CommonsLog
 public class FormatHelper {
 
 	/**
@@ -39,7 +43,7 @@ public class FormatHelper {
 
 	/**
 	 * Format the given string as a percentage with two decimal precision. String should be something that can be converted to a number.
-	 * 
+	 *
 	 * @param string string representation of the number
 	 * @return percentage to decimal places with a '%' for good measure
 	 */
@@ -63,7 +67,22 @@ public class FormatHelper {
 		if (StringUtils.isBlank(grade)) {
 			return "";
 		}
-		return StringUtils.removeEnd(String.valueOf(Double.parseDouble(grade)), ".0");
+
+		String s = null;
+		try {
+			final Double d = Double.parseDouble(grade);
+
+			final DecimalFormat df = new DecimalFormat();
+			df.setMinimumFractionDigits(0);
+			df.setGroupingUsed(false);
+
+			s = df.format(d);
+		} catch (final NumberFormatException e) {
+			log.debug("Bad format, returning original string: " + grade);
+			s = grade;
+		}
+
+		return StringUtils.removeEnd(s, ".0");
 	}
 
 	/**
@@ -101,5 +120,17 @@ public class FormatHelper {
 	public static String formatDateTime(final Date date) {
 		final SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm"); // TODO needs to come from i18n
 		return df.format(date);
+	}
+
+	/**
+	 * Abbreviate a string via {@link StringUtils#abbreviateMiddle(String, String, int)}
+	 *
+	 * Set at 45 chars
+	 *
+	 * @param s String to abbreviate
+	 * @return abbreviated string or full string if it was shorter than the setting
+	 */
+	public static String abbreviateMiddle(final String s) {
+		return StringUtils.abbreviateMiddle(s, "...", 45);
 	}
 }

@@ -25,15 +25,12 @@ body.is-logged-out{
 		padding: 0 1em;
 		text-align: left;
 		width: 		auto;
-
-		@include transition(width 0.5s linear);
-		@media #{$phone}{
-			width: 0px;
-		}
+		@include flex-shrink( 0 );
+		@include transition( width 0.5s linear 0s );
 		.#{$namespace}headerLogo--institution{
 			background: url($logo) no-repeat center center;
-			width: 		50px;
-			height: 	30px;
+			width: 		$logo-width;
+			height: 	$logo-height;
 			display:	inline-block;
 			@media #{$phone}{
 				margin: 0.2em 0 0 0.2em;
@@ -68,13 +65,16 @@ body.is-logged-out{
 				}
 			}
 		}
+		p{
+			margin: 0.05em 1.5em 0 0;
+		}
 	}
 
 	&.is-maximized{
 		.siteNavWrap{
-			width: calc( 100% - 370px );
+			@include flex-grow( 1 );
 			@media #{$phone}{
-				
+				display: none;
 			}
 		}
 	}
@@ -110,10 +110,10 @@ body.is-logged-out{
 .userNav__subnav{
 	font-family: $header-font-family;
 	position: absolute;
-	right: 0.5em;
+	right: 0em;
 	width: #{ $tool-menu-width * 2.5 };
 	z-index: 99;
-	@include box-shadow( 0 0 4px rgba( $text-color ,0.35) );
+	box-shadow: 0 0 4px rgba( $text-color ,0.35);
 	li{
 		display: block;
 		border: 0px none;
@@ -176,7 +176,6 @@ body.is-logged-out{
 
 		.#{$namespace}userNav__submenuitem--profile{
 			display: block;
-			margin-top: -0.85em;
 			margin-left: 0.5em;
 		}
 	}
@@ -187,23 +186,29 @@ body.is-logged-out{
 	color: $background-color;
 	font-size: 0.9em;
 	min-height: 45px;
-	@include transition( top 0.25s linear );
+	width: 100%;
+	@include display-flex(inline-flex);
+	@include align-items(center);
+	@include justify-content( space-between );
+	@include transition( top 0.25s linear 0s );
 	a{
 		color: $background-color;
 		font-weight: 300;
 	}
 	> * {
-		display: inline-block;
-		vertical-align: middle;
 		@media #{$phone}{
 			display: inline;
 		}
 	}
 	.#{$namespace}loginNav{
 		float: right;
-		margin: 0 1em 0 0px
+		margin: 0 1em 0 0px;
+		@include flex-shrink( 0 );
+		@include align-self( flex-start );
 	}
+
 	@media #{$phone}{
+		display: block;
 		position: fixed;
 		width: 100%;
 		top: 0;
@@ -218,8 +223,6 @@ body.is-logged-out{
 }
 
 #mastLogin{
-
-	//width: calc( 100% - #{$tool-menu-width} - 4px ); //Fix for inline-block margin.
 	
 	@media #{$phone}{
 		margin: 0 0 0 0;
@@ -279,7 +282,7 @@ body.is-logged-out{
 
 	.has-avatar, .no-avatar{
 		display: inline-block;
-		padding: 0em 1.5em 0.8em 0px;
+		padding: 0em 1.5em 0.2em 0px;
 		position: relative;
 		margin-top: -0.8em;
 		.#{$namespace}userNav__submenuitem--username, .#{$namespace}userNav__submenuitem--userid{
@@ -291,14 +294,17 @@ body.is-logged-out{
 			text-decoration: none;
 			top: 0.6em;
 			white-space: nowrap;
-			@media #{$phone}{
-				display: none;
-			}
 		}
 	}
 
 	.no-avatar{
 		padding-top: 1em;
+		.#{$namespace}userNav__submenuitem--username{
+			@media #{$phone}{
+				display: none;
+			}
+		}
+
 	}
 
 	.has-avatar{
@@ -316,6 +322,11 @@ body.is-logged-out{
 			position: relative;
 			top: 0.8em;
 		}
+		.#{$namespace}userNav__submenuitem--username, .#{$namespace}userNav__submenuitem--userid{
+			@media #{$phone}{
+				display: none;
+			}
+		}
 	}
 
 	#loginUser{
@@ -332,14 +343,17 @@ body.is-logged-out{
 		margin-top: -2.5em;
 		padding: 18px 22px 27px 14px;
 		display: block;
+		outline: 0;
 		left: 12px;
 		&.is-clicked{
 			@include transform( rotate(180deg) );
 			position: relative;
-			top: 0px;
+			top: -0.2em;
+    		left: 1.3em;
+			outline: 0;
 		}
 		@media #{$phone}{
-			padding: 18px 22px 10px 14px;
+			padding: 18px 22px 3px 14px;
 		}
 	}
 
@@ -355,7 +369,7 @@ body.is-logged-out{
 			@extend .userNav__subnav;
 			&:after {
 				bottom: 100%;
-				left: 93%;
+				left: 82%;
 				border: solid transparent;
 				content: " ";
 				height: 0;
@@ -367,6 +381,9 @@ body.is-logged-out{
 				border-width: 7px;
 				margin-left: -7px;
 				outline: 0;
+				@media #{$phone}{
+					left: 85%;
+				}
 			}
 			.#{$namespace}userNav__submenuitem-indented{
 				padding-left: 1.5em;
@@ -375,7 +392,7 @@ body.is-logged-out{
 				margin: 3.3em 0 0 -9.8em;
 				position: fixed;
 			    top: 0.3em;
-			    z-index: 21;
+			    z-index: 61;
 			}
 			.Mrphs-loginUser{
 				padding: 0 0 0 0;
@@ -402,6 +419,13 @@ body.is-logged-out{
 				}
 			}
 		}
+		.#{$namespace}userNav__drop-btn{
+			i {
+				position: relative;
+	    		top: -0.6em;
+	    		left: 0.4em;
+			}
+		}
 	}
 	
 	.#{$namespace}userNav__submenuitem--userid{
@@ -420,7 +444,7 @@ body.is-logged-out{
 		position: fixed;
 		top: 0;
 		z-index: 1000;
-		@include transition(top 0.25s linear);
+		@include transition( top 0.25s linear 0s );
 		&.moving{
 			top: -4.5em;
 		}
@@ -452,7 +476,7 @@ body.is-logged-out{
 		}
 		&:hover{
 			/*color: $background-color-secondary;*/
-			@include box-shadow( inset 0 9px 10px rgba(0,0,0,0.25) );
+			box-shadow: inset 0 9px 10px rgba(0,0,0,0.25);
 		}
 	}
 }
@@ -470,6 +494,9 @@ body.is-logged-out{
 
 .view-all-sites-btn a{
 	text-decoration: none;
+	&:hover{
+		text-decoration: none;
+	}
 }
 
 .all-sites-icon, .all-sites-label{
@@ -478,7 +505,10 @@ body.is-logged-out{
 }
 
 .all-sites-icon{
-	font-size: 16pt;
+	/* Using !important here because CKEditor pulls in its own
+           fontawesome.css which adjusts the size of our icon unless
+           we override it. */
+	font-size: 16pt !important;
 	padding-right: 2px;
 }
 
@@ -503,14 +533,16 @@ body.is-logged-out{
 				}
 			}
 			.#{$namespace}sitesNav__drop, .#{$namespace}sitesNav__dropdown{
+				outline: 0;
 				@extend .fa-angle-down;
 				@extend .fa;
 				@extend .fa-lg;
 				@extend .sitesNav__drop;
 				&.is-clicked{
 					@include transform( rotate(180deg) );
+					left: -5px;
 					position: relative;
-					top: 3px;
+					top: -2px;
 				}
 			}
 			ul{
@@ -568,6 +600,18 @@ body.is-logged-out{
 	}
 	@media #{$phone}{
 		display: none;
+	}
+}
+
+body.is-logged-out{
+	#linkNav{
+		ul{
+			li.#{$namespace}sitesNav__menuitem{
+				.#{$namespace}sitesNav__drop, .#{$namespace}sitesNav__dropdown{
+					display: none;
+				}
+			}
+		}
 	}
 }
 
@@ -631,3 +675,9 @@ body.is-logged-out{
 	}
 }
 
+.user-dropdown-overlay{
+	height: 100%; 
+	position: fixed; 
+	width: 100%; 
+	z-index: 20;
+}

@@ -16,19 +16,24 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.apache.wicket.spring.injection.annot.SpringBean;
 import org.sakaiproject.gradebookng.business.GbCategoryType;
+import org.sakaiproject.gradebookng.business.GbRole;
 import org.sakaiproject.gradebookng.business.GradebookNgBusinessService;
 import org.sakaiproject.gradebookng.business.model.GbGradeInfo;
 import org.sakaiproject.gradebookng.business.util.FormatHelper;
+import org.sakaiproject.gradebookng.tool.component.GbCourseGradeLabel;
 import org.sakaiproject.gradebookng.tool.pages.BasePage;
 import org.sakaiproject.gradebookng.tool.pages.GradebookPage;
 import org.sakaiproject.service.gradebook.shared.Assignment;
 import org.sakaiproject.service.gradebook.shared.CourseGrade;
 import org.sakaiproject.tool.gradebook.Gradebook;
 
+/**
+ * The panel that is rendered for students for both their own grades view, and also when viewing it from the instructor review tab
+ */
 public class StudentGradeSummaryGradesPanel extends Panel {
 
 	private static final long serialVersionUID = 1L;
@@ -57,40 +62,47 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 		final Map<Assignment, GbGradeInfo> grades = this.businessService.getGradesForStudent(userId);
 		final List<Assignment> assignments = new ArrayList(grades.keySet());
 
+		// get gradebook
+		final Gradebook gradebook = this.businessService.getGradebook();
+
 		// get configured category type
-		this.configuredCategoryType = this.businessService.getGradebookCategoryType();
+		this.configuredCategoryType = GbCategoryType.valueOf(gradebook.getCategory_type());
 
 		// setup
 		final List<String> categoryNames = new ArrayList<String>();
 		final Map<String, List<Assignment>> categoryNamesToAssignments = new HashMap<String, List<Assignment>>();
 		final Map<String, String> categoryAverages = new HashMap<>();
 
-		// iterate over assignments and build map of categoryname to list of assignments as well as category averages
-		for (final Assignment assignment : assignments) {
+		// if gradebook release setting disabled, no work to do
+		if (gradebook.isAssignmentsDisplayed()) {
 
-			final String categoryName = getCategoryName(assignment);
+			// iterate over assignments and build map of categoryname to list of assignments as well as category averages
+			for (final Assignment assignment : assignments) {
 
-			if (!categoryNamesToAssignments.containsKey(categoryName)) {
-				categoryNames.add(categoryName);
-				categoryNamesToAssignments.put(categoryName, new ArrayList<Assignment>());
+				// if an assignment is released, update the flag (but don't set it false again)
+				// then build the category map. we don't do any of this for unreleased gradebook items
+				if (assignment.isReleased()) {
+					this.someAssignmentsReleased = true;
 
-				final Double categoryAverage = this.businessService.getCategoryScoreForStudent(assignment.getCategoryId(), userId);
-				if (categoryAverage == null || categoryName.equals(GradebookPage.UNCATEGORISED)) {
-					categoryAverages.put(categoryName, getString("label.nocategoryscore"));
-				} else {
-					categoryAverages.put(categoryName, FormatHelper.formatDoubleAsPercentage(categoryAverage));
+					final String categoryName = getCategoryName(assignment);
+
+					if (!categoryNamesToAssignments.containsKey(categoryName)) {
+						categoryNames.add(categoryName);
+						categoryNamesToAssignments.put(categoryName, new ArrayList<Assignment>());
+
+						final Double categoryAverage = this.businessService.getCategoryScoreForStudent(assignment.getCategoryId(), userId);
+						if (categoryAverage == null || categoryName.equals(GradebookPage.UNCATEGORISED)) {
+							categoryAverages.put(categoryName, getString("label.nocategoryscore"));
+						} else {
+							categoryAverages.put(categoryName, FormatHelper.formatDoubleAsPercentage(categoryAverage));
+						}
+					}
+
+					categoryNamesToAssignments.get(categoryName).add(assignment);
 				}
 			}
-
-			categoryNamesToAssignments.get(categoryName).add(assignment);
-
-			// if an assignment is released, update the flag (but don't set it false again)
-			if (assignment.isReleased()) {
-				this.someAssignmentsReleased = true;
-			}
-
+			Collections.sort(categoryNames);
 		}
-		Collections.sort(categoryNames);
 
 		// output all of the categories
 		// within each we then add the assignments in each category
@@ -182,7 +194,7 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 			}
 		});
 
-		// no assignmnts message
+		// no assignments message
 		final WebMarkupContainer noAssignments = new WebMarkupContainer("noAssignments") {
 			private static final long serialVersionUID = 1L;
 
@@ -193,28 +205,18 @@ public class StudentGradeSummaryGradesPanel extends Panel {
 		};
 		add(noAssignments);
 
-		final Gradebook gradebook = this.businessService.getGradebook();
-		if (gradebook.isCourseGradeDisplayed()) {
+		// course grade
+		// GbCourseGradeLabel takes care of all permissions, settings and formatting, we just give it the data
+		final CourseGrade courseGrade = this.businessService.getCourseGrade(userId);
 
-			// check permission for current user to view course grade
-			// otherwise fetch and render it
-			final String currentUserUuid = this.businessService.getCurrentUser().getId();
-			if (!this.businessService.isCourseGradeVisible(currentUserUuid)) {
-				add(new Label("courseGrade", new ResourceModel("label.coursegrade.nopermission")));
-			} else {
-				final CourseGrade courseGrade = this.businessService.getCourseGrade(userId);
-				if (StringUtils.isBlank(courseGrade.getEnteredGrade()) && StringUtils.isBlank(courseGrade.getMappedGrade())) {
-					add(new Label("courseGrade", new ResourceModel("label.studentsummary.coursegrade.none")));
-				} else if (StringUtils.isNotBlank(courseGrade.getEnteredGrade())) {
-					add(new Label("courseGrade", courseGrade.getEnteredGrade()));
-				} else {
-					add(new Label("courseGrade", new StringResourceModel("label.studentsummary.coursegrade.display", null, new Object[] {
-							courseGrade.getMappedGrade(), FormatHelper.formatStringAsPercentage(courseGrade.getCalculatedGrade()) })));
-				}
-			}
-		} else {
-			add(new Label("courseGrade", getString("label.studentsummary.coursegradenotreleased")));
-		}
+		final Map<String, Object> courseGradeModelData = new HashMap<>();
+		courseGradeModelData.put("currentUserUuid", userId);
+		courseGradeModelData.put("currentUserRole", GbRole.STUDENT);
+		courseGradeModelData.put("courseGrade", courseGrade);
+		courseGradeModelData.put("gradebook", gradebook);
+		courseGradeModelData.put("showPoints", true);
+		courseGradeModelData.put("showOverride", true);
+		add(new GbCourseGradeLabel("courseGrade", Model.ofMap(courseGradeModelData)));
 
 		add(new AttributeModifier("data-studentid", userId));
 	}

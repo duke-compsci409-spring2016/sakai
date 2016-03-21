@@ -1,5 +1,7 @@
 package org.sakaiproject.gradebookng.tool.pages;
 
+import java.util.Locale;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -12,6 +14,7 @@ import org.apache.wicket.markup.head.PriorityHeaderItem;
 import org.apache.wicket.markup.head.StringHeaderItem;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.WebPage;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.Model;
@@ -55,11 +58,14 @@ public class BasePage extends WebPage {
 	public BasePage() {
 		log.debug("BasePage()");
 
-		// get current user
+		// setup some data that can be shared across all pages
 		this.currentUserUuid = this.businessService.getCurrentUser().getId();
-
-		// role check
 		this.role = this.businessService.getUserRole();
+
+		//
+
+		// set locale
+		setUserPreferredLocale();
 
 		// nav container
 		final WebMarkupContainer nav = new WebMarkupContainer("gradebookPageNav") {
@@ -88,6 +94,7 @@ public class BasePage extends WebPage {
 			}
 
 		};
+		this.gradebookPageLink.add(new Label("screenreaderlabel", getString("link.screenreader.tabnotselected")));
 		nav.add(this.gradebookPageLink);
 
 		// settings page
@@ -104,6 +111,7 @@ public class BasePage extends WebPage {
 				return (BasePage.this.role == GbRole.INSTRUCTOR);
 			}
 		};
+		this.settingsPageLink.add(new Label("screenreaderlabel", getString("link.screenreader.tabnotselected")));
 		nav.add(this.settingsPageLink);
 
 		// import/export page
@@ -120,6 +128,7 @@ public class BasePage extends WebPage {
 				return (BasePage.this.role == GbRole.INSTRUCTOR);
 			}
 		};
+		this.importExportPageLink.add(new Label("screenreaderlabel", getString("link.screenreader.tabnotselected")));
 		nav.add(this.importExportPageLink);
 
 		// permissions page
@@ -136,6 +145,7 @@ public class BasePage extends WebPage {
 				return (BasePage.this.role == GbRole.INSTRUCTOR);
 			}
 		};
+		this.permissionsPageLink.add(new Label("screenreaderlabel", getString("link.screenreader.tabnotselected")));
 		nav.add(this.permissionsPageLink);
 
 		add(nav);
@@ -185,6 +195,7 @@ public class BasePage extends WebPage {
 	 */
 	protected void disableLink(final Link<Void> l) {
 		l.add(new AttributeAppender("class", new Model<String>("current"), " "));
+		l.replace(new Label("screenreaderlabel", getString("link.screenreader.tabselected")));
 		l.setEnabled(false);
 	}
 
@@ -196,11 +207,12 @@ public class BasePage extends WebPage {
 
 		flagWithPopover.add(new AttributeModifier("title", message));
 		flagWithPopover.add(new AttributeModifier("data-toggle", "popover"));
-		flagWithPopover.add(new AttributeModifier("data-trigger", "focus"));
+		flagWithPopover.add(new AttributeModifier("data-trigger", "manual"));
 		flagWithPopover.add(new AttributeModifier("data-placement", "bottom"));
 		flagWithPopover.add(new AttributeModifier("data-html", "true"));
 		flagWithPopover.add(new AttributeModifier("data-container", "#gradebookGrades"));
-		flagWithPopover.add(new AttributeModifier("data-template", "'<div class=\"gb-popover popover\" role=\"tooltip\"><div class=\"arrow\"></div><div class=\"popover-content\"></div></div>'"));
+		flagWithPopover.add(new AttributeModifier("data-template",
+				"'<div class=\"gb-popover popover\" role=\"tooltip\"><div class=\"arrow\"></div><div class=\"popover-content\"></div></div>'"));
 		flagWithPopover.add(new AttributeModifier("data-content", generatePopoverContent(message)));
 		flagWithPopover.add(new AttributeModifier("tabindex", "0"));
 
@@ -215,5 +227,14 @@ public class BasePage extends WebPage {
 		final String wrappedPopoverContent = String.format(popoverHTML, message);
 
 		return wrappedPopoverContent;
+	}
+
+	/**
+	 * Allow overrides of the user's locale
+	 */
+	public void setUserPreferredLocale() {
+		final Locale locale = this.businessService.getUserPreferredLocale();
+		log.debug("User preferred locale: " + locale);
+		getSession().setLocale(locale);
 	}
 }
