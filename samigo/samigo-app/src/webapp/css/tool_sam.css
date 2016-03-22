@@ -203,7 +203,7 @@ font-size:1.2em
 	text-indent: 0em;
 	margin-top: 0.6em;
 	margin-left: -1.5em;
-	max-height: 250px;  
+	max-height: 250px;
 	white-space: nowrap;
 	overflow: scroll; /* for browsers that don't support overflow-y */
 	overflow-x: auto;
@@ -284,23 +284,23 @@ li.last {
 table.simpleBorder {
 	border-bottom: 1px solid #ccc;
 	background-color: white;
-	vertical-align: top; 
+	vertical-align: top;
 }
 table.simpleBorder td {
 	padding: 4px;
 	border-top: 1px solid #ccc;
 	background-color: white;
-	vertical-align: top; 
+	vertical-align: top;
 }
 table.noBorder {
 	background-color: white;
-	vertical-align: top; 
+	vertical-align: top;
 	border: 1px solid #fff;
 }
 table.noBorder td {
 	padding: 4px;
 	background-color: white;
-	vertical-align: top; 
+	vertical-align: top;
 	border: 1px solid #fff;
 }
 
@@ -421,7 +421,7 @@ a.hideDivision {
 .answerkeyFeedbackCommentLabel {
 	FONT-WEIGHT: bold;
     COLOR:#860000;
-} 
+}
 
 .messageSamigo {
 	background: #FFEEEE url(../images/exclamation.png) 5px 4px no-repeat;
@@ -489,16 +489,16 @@ a.hideDivision {
   color: #aaa;
 }
 .submissionInfoCol1{
-    width: 200px; 
+    width: 200px;
 }
 
 .submissionInfoCol2{
-    width: 650px; 
+    width: 650px;
 }
 
 .mcAnswerText {
 	display:inline-table;
-	/*width: 80%;*/
+	width: 80%;
 	float:unset;
 }
 /* Someone put a paragraph in a multiple choice answer */
@@ -534,7 +534,7 @@ table.listHierEventLog {
     display: -ms-flexbox;      /* TWEENER - IE 10 */
     display: -webkit-flex;     /* NEW - Chrome */
     display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
-    -webkit-box-align: center; 
+    -webkit-box-align: center;
     -moz-box-align: center;
     -ms-flex-align: center;
     -webkit-align-items: center;
@@ -557,7 +557,7 @@ table.listHierEventLog {
     display: -ms-flexbox;      /* TWEENER - IE 10 */
     display: -webkit-flex;     /* NEW - Chrome */
     display: flex;             /* NEW, Spec - Opera 12.1, Firefox 20+ */
-    -webkit-box-align: center; 
+    -webkit-box-align: center;
     -moz-box-align: center;
     -ms-flex-align: center;
     -webkit-align-items: center;
@@ -584,7 +584,7 @@ divRight input {
 }
 
 #timer-expired-warning{
-	text-align: center;	
+	text-align: center;
 }
 
 #audio-recorder-header {
@@ -674,7 +674,7 @@ divRight input {
 }
 #audio-max-time {
     position: absolute;
-    right: 8px; 
+    right: 8px;
     top: 30px;
     width: 30px;
     text-align: right;
