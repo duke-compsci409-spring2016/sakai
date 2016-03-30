@@ -123,7 +123,18 @@ public class SaveAssessmentSettings
     	control.setStartDate(assessmentSettings.getStartDate());
     }
     control.setDueDate(assessmentSettings.getDueDate());
-    control.setRetractDate(assessmentSettings.getRetractDate());
+
+    if (assessmentSettings.getLateHandling() != null) {
+        control.setLateHandling(new Integer(assessmentSettings.getLateHandling()));
+    }
+
+    if (assessmentSettings.getRetractDate() == null
+            || "".equals(assessmentSettings.getRetractDateString())) {
+        control.setRetractDate(null);
+        control.setLateHandling(AssessmentAccessControl.NOT_ACCEPT_LATE_SUBMISSION);
+    } else {
+        control.setRetractDate(assessmentSettings.getRetractDate());
+    }
     control.setFeedbackDate(assessmentSettings.getFeedbackDate());
     control.setReleaseTo(assessmentSettings.getReleaseTo());
     //log.info("control RELEASETO ="+control.getReleaseTo());
@@ -145,15 +156,19 @@ public class SaveAssessmentSettings
     	}
     	control.setItemNavigation(Integer.valueOf(nav));
     }
-    if (assessmentSettings.getItemNumbering()!=null)
+    if (StringUtils.isNotBlank(assessmentSettings.getItemNumbering())) {
       control.setItemNumbering(new Integer(assessmentSettings.getItemNumbering()));
-    if(assessmentSettings.getDisplayScoreDuringAssessments() != null)
-    	control.setDisplayScoreDuringAssessments(new Integer(assessmentSettings.getDisplayScoreDuringAssessments()));
-    if (assessmentSettings.getAssessmentFormat()!=null )
-     control.setAssessmentFormat(new Integer(assessmentSettings.getAssessmentFormat()));
+    }
+    if (StringUtils.isNotBlank(assessmentSettings.getDisplayScoreDuringAssessments())) {
+      control.setDisplayScoreDuringAssessments(new Integer(assessmentSettings.getDisplayScoreDuringAssessments()));
+    }
+    if (StringUtils.isNotBlank(assessmentSettings.getAssessmentFormat())) {
+      control.setAssessmentFormat(new Integer(assessmentSettings.getAssessmentFormat()));
+    }
 
-    if (assessmentSettings.getIsMarkForReview())
+    if (assessmentSettings.getIsMarkForReview()) {
         control.setMarkForReview(AssessmentAccessControl.MARK_FOR_REVIEW);
+    }
     else {
     	control.setMarkForReview(AssessmentAccessControl.NOT_MARK_FOR_REVIEW);
     }
@@ -179,10 +194,6 @@ public class SaveAssessmentSettings
     //log.info("**unlimited submission="+assessmentSettings.getUnlimitedSubmissions());
     //log.info("**allowed="+control.getSubmissionsAllowed());
 
-    if (assessmentSettings.getLateHandling()!=null){
-      control.setLateHandling(new Integer(assessmentSettings.
-                                                getLateHandling()));
-    }
     if (assessmentSettings.getSubmissionsSaved()!=null){
       control.setSubmissionsSaved(new Integer(assessmentSettings.getSubmissionsSaved()));
     }
@@ -196,8 +207,6 @@ public class SaveAssessmentSettings
 
     // e. set Submission Messages
     control.setSubmissionMessage(assessmentSettings.getSubmissionMessage());
-    // f. set username
-    control.setUsername(TextFormat.convertPlaintextToFormattedTextNoHighUnicode(log, StringUtils.trim(assessmentSettings.getUsername())));
     // g. set password
     control.setPassword(TextFormat.convertPlaintextToFormattedTextNoHighUnicode(log, StringUtils.trim(assessmentSettings.getPassword())));
     // h. set finalPageUrl

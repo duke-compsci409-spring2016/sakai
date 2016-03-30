@@ -454,6 +454,7 @@ public class GradebookPage extends BasePage {
 		modelData.put("assignments", assignments);
 		modelData.put("categories", categories);
 		modelData.put("categoryType", this.businessService.getGradebookCategoryType());
+		modelData.put("categoriesEnabled", categoriesEnabled);
 
 		table.addTopToolbar(new GbHeadersToolbar(table, null, Model.ofMap(modelData)));
 		table.add(new AttributeModifier("data-siteid", this.businessService.getCurrentSiteId()));
@@ -648,6 +649,7 @@ public class GradebookPage extends BasePage {
 
 		// GradebookNG Grade specific styles and behaviour
 		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/gradebook-grades.css?version=%s", version)));
+		response.render(CssHeaderItem.forUrl(String.format("/gradebookng-tool/styles/gradebook-print.css?version=%s", version), "print"));
 		response.render(JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grades.js?version=%s", version)));
 		response.render(
 				JavaScriptHeaderItem.forUrl(String.format("/gradebookng-tool/scripts/gradebook-grade-summary.js?version=%s", version)));

@@ -1759,16 +1759,6 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 						    }
 
 						    // if width is blank or 100% scale the height
-						    if (width != null && height != null && !height.number.equals("")) {
-							    if (width.number.equals("") && width.unit.equals("") || width.number.equals("100") && width.unit.equals("%")) {
-
-								    int h = Integer.parseInt(height.number);
-								    if (h > 0) {
-									    width.number = Integer.toString((int) Math.round(h * 1.641025641));
-									    width.unit = height.unit;
-								    }
-							    }
-						    }
 
 						    // <object style="height: 390px; width: 640px"><param
 						    // name="movie"
@@ -3065,6 +3055,8 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 				if (i.getType() == SimplePageItem.RESOURCE && i.isSameWindow()) {
 					GeneralViewParameters params = new GeneralViewParameters(ShowItemProducer.VIEW_ID);
 					params.setSendingPage(currentPage.getPageId());
+					if (i.getAttribute("multimediaUrl") != null) // resource where we've stored the URL ourselves
+					    params.setSource(i.getAttribute("multimediaUrl"));
 					if (lessonBuilderAccessService.needsCopyright(i.getSakaiId()))
 					    params.setSource("/access/require?ref=" + URLEncoder.encode("/content" + i.getSakaiId()) + "&url=" + URLEncoder.encode(i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner()).substring(7)));
 					else
@@ -3075,7 +3067,10 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 					
 				}
 				else {
-				    URL = i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner());
+				    if (i.getAttribute("multimediaUrl") != null) // resource where we've stored the URL ourselves
+					URL = i.getAttribute("multimediaUrl");
+				    else
+					URL = i.getItemURL(simplePageBean.getCurrentSiteId(),currentPage.getOwner());
 				    UILink link = UILink.make(container, ID, URL);
 				    link.decorate(new UIFreeAttributeDecorator("target", "_blank"));
 				    if (notDone)
@@ -3727,6 +3722,7 @@ public class ShowPageProducer implements ViewComponentProducer, DefaultView, Nav
 		UIForm form = UIForm.make(tofill, "add-multimedia-form");
 		makeCsrf(form, "csrf9");
 
+		UIInput.make(form, "mm-name", "#{simplePageBean.name}");
 		UIOutput.make(form, "mm-file-label", messageLocator.getMessage("simplepage.upload_label"));
 
 		UIOutput.make(form, "mm-url-label", messageLocator.getMessage("simplepage.addLink_label"));
