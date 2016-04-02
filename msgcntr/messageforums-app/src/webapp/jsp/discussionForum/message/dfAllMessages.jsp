@@ -47,9 +47,9 @@
             var movelink = document.getElementById(linkid);
         	movelink.style.color="";
         }
- 
-        // this is  called from messageforums-app/src/java/org/sakaiproject/tool/messageforums/jsf/HierDataTableRender.java. 
-        // checkbox is encoded there.  
+
+        // this is  called from messageforums-app/src/java/org/sakaiproject/tool/messageforums/jsf/HierDataTableRender.java.
+        // checkbox is encoded there.
         function enableDisableMoveThreadLink() {
             //function to check total number of CheckBoxes that are checked in a form
             //initialize total count to zero
@@ -80,7 +80,7 @@
             else {
                 disableMoveLink();
             }
-        
+
          }
 
  		</script>
@@ -89,11 +89,11 @@
 	<%--//
 		//plugin required below
 		<sakai:script contextBase="/messageforums-tool" path="/js/pxToEm.js"/>
-		
+
 		/*
 		gsilver: get a value representing max indents
-	 	from the server configuraiton service or the language bundle, parse 
-		all the indented items, and if the item indent goes over the value, flatten to the value 
+	 	from the server configuraiton service or the language bundle, parse
+		all the indented items, and if the item indent goes over the value, flatten to the value
 		*/
 		<script type="text/javascript">
 		$(document).ready(function() {
@@ -113,7 +113,7 @@
 			});
 		});
 
-		</script>	
+		</script>
 		// element into which the value gets insert and retrieved from
 		<span class="highlight"  id="maxthreaddepth" class="skip"><h:outputText value="#{msgs.cdfm_maxthreaddepth}" /></span>
 //--%>
@@ -137,12 +137,12 @@
 					<f:param value="#{ForumTool.selectedTopic.topic.id}" name="topicId"/>
 					<h:outputText value="#{msgs.cdfm_topic_settings}"/>
 				</h:commandLink>
-				
+
 				<h:commandLink action="#{ForumTool.processActionDeleteTopicConfirm}" id="delete_confirm" accesskey="d" rendered="#{!ForumTool.selectedTopic.markForDeletion && ForumTool.displayTopicDeleteOption}">
 				<f:param value="#{ForumTool.selectedTopic.topic.id}" name="topicId"/>
 				<h:outputText value="#{msgs.cdfm_button_bar_delete_topic}"/>
 				</h:commandLink>
-				
+
 				<h:outputLink id="print" value="javascript:printFriendly('#{ForumTool.printFriendlyUrl}');">
 					<h:graphicImage url="/../../library/image/silk/printer.png" alt="#{msgs.print_friendly}" title="#{msgs.print_friendly}" />
 				</h:outputLink>
@@ -167,57 +167,73 @@
 					  <h:outputText value="#{ForumTool.selectedTopic.topic.title}" />
 						<%--//designNote: up arrow should go here - get decent image and put title into link. --%>
 						<h:commandLink action="#{ForumTool.processActionDisplayForum}"  title="#{msgs.cdfm_up_level_title}" rendered="#{ForumTool.showForumLinksInNav}" style="margin-left:.3em">
-							<h:graphicImage url="/images/silk/arrow_turn_up.gif" style="vertical-align:top;padding:0;margin-top:-2px" alt="" />	
+							<h:graphicImage url="/images/silk/arrow_turn_up.gif" style="vertical-align:top;padding:0;margin-top:-2px" alt="" />
 							<f:param value="#{ForumTool.selectedForum.forum.id}" name="forumId"/>
 						</h:commandLink>
 					  <f:verbatim></h3></div></f:verbatim>
 				 </h:panelGroup>
 				 <h:panelGroup styleClass="itemNav">
 				   <h:outputText   value="#{msgs.cdfm_previous_topic}"  rendered="#{!ForumTool.selectedTopic.hasPreviousTopic}" />
-					 <h:commandLink action="#{ForumTool.processActionDisplayPreviousTopic}" value="#{msgs.cdfm_previous_topic}"  rendered="#{ForumTool.selectedTopic.hasPreviousTopic}" 
+					 <h:commandLink action="#{ForumTool.processActionDisplayPreviousTopic}" value="#{msgs.cdfm_previous_topic}"  rendered="#{ForumTool.selectedTopic.hasPreviousTopic}"
 					                title=" #{msgs.cdfm_previous_topic}">
 						 <f:param value="#{ForumTool.selectedTopic.previousTopicId}" name="previousTopicId"/>
 						 <f:param value="#{ForumTool.selectedForum.forum.id}" name="forumId"/>
 					 </h:commandLink>
-					 <f:verbatim><h:outputText  id="blankSpace1" value=" |  " /></f:verbatim>				
+					 <f:verbatim><h:outputText  id="blankSpace1" value=" |  " /></f:verbatim>
 					 <h:outputText   value="#{msgs.cdfm_next_topic}" rendered="#{!ForumTool.selectedTopic.hasNextTopic}" />
-					 <h:commandLink action="#{ForumTool.processActionDisplayNextTopic}" value="#{msgs.cdfm_next_topic}" rendered="#{ForumTool.selectedTopic.hasNextTopic}" 
+					 <h:commandLink action="#{ForumTool.processActionDisplayNextTopic}" value="#{msgs.cdfm_next_topic}" rendered="#{ForumTool.selectedTopic.hasNextTopic}"
 					                title=" #{msgs.cdfm_next_topic}">
 						<f:param value="#{ForumTool.selectedTopic.nextTopicId}" name="nextTopicId"/>
 						<f:param value="#{ForumTool.selectedForum.forum.id}" name="forumId"/>
 					 </h:commandLink>
 				 </h:panelGroup>
 			  </h:panelGrid>
-		
+
 			<h:panelGrid columns="1" width="100%"  styleClass="topicBloc topicBlocLone specialLink"  cellspacing="0" cellpadding="0">
 				<h:panelGroup>
 					<h:outputText styleClass="highlight title" id="draft" value="#{msgs.cdfm_draft}" rendered="#{ForumTool.selectedTopic.topic.draft == 'true'}"/>
 					<h:outputText id="draft_space" value="  - " rendered="#{ForumTool.selectedTopic.topic.draft == 'true'}" styleClass="title"/>
 					<h:graphicImage url="/images/silk/date_delete.png" title="#{msgs.topic_restricted_message}" alt="#{msgs.topic_restricted_message}" rendered="#{ForumTool.selectedTopic.topic.availability == 'false'}" style="margin-right:.5em"/>
 					<h:graphicImage url="/images/silk/lock.png" alt="#{msgs.cdfm_forum_locked}" rendered="#{ForumTool.selectedForum.forum.locked == 'true' || ForumTool.selectedTopic.topic.locked == 'true'}" style="margin-right:.5em"/>
-					  
-					
-					
+
+
+
 					<h:outputText value="#{ForumTool.selectedTopic.topic.title}" styleClass="title"/>
-					
-                                
+
+
 			         <h:outputText id="topic_moderated" value=" #{msgs.cdfm_forum_moderated_flag}" styleClass="childrenNewZero" rendered="#{ForumTool.selectedTopic.moderated == 'true' }" />
-					
-					  <%--//designNote: for paralellism to other views, need to add read/unread count here as well as Moderated attribute--%>  
-					  <%-- 
-					  <h:outputText value=" #{msgs.cdfm_openb}" styleClass="textPanelFooter"/> 
+
+					  <%--//designNote: for paralellism to other views, need to add read/unread count here as well as Moderated attribute--%>
+            <%-- // display  singular ('unread message') if unread message is  1 --%>
+            <h:outputText styleClass="childrenNew" id="topic_msg_count_unread" value="  #{topic.unreadNoMessages} #{msgs.cdfm_lowercase_unread_msg}"
+                           rendered="#{topic.isRead && topic.unreadNoMessages >= 1}"/>
+
+            <%-- // display  plural ('unread messages') with different style sheet if unread message is 0 --%>
+            <h:outputText styleClass="childrenNewZero" id="topic_msgs_count0_unread" value="  #{topic.unreadNoMessages} #{msgs.cdfm_lowercase_unread_msg}"
+                          rendered="#{topic.isRead && topic.unreadNoMessages == 0}"/>
+
+            <%-- // display singular ('message') if total message is 1--%>
+            <h:outputText styleClass="textPanelFooter" id="topic_msg_count" value="#{msgs.cdfm_of} #{topic.totalNoMessages} #{msgs.cdfm_lowercase_msg}"
+                          rendered="#{topic.isRead && topic.totalNoMessages == 1}"/>
+
+            <%-- // display singular ('message') if total message is 0 or more than 1--%>
+            <h:outputText styleClass="textPanelFooter" id="topic_msgs_count" value="#{msgs.cdfm_of} #{topic.totalNoMessages} #{msgs.cdfm_lowercase_msgs}"
+                          rendered="#{topic.isRead && (topic.totalNoMessages > 1 || topic.totalNoMessages == 0)}"/>
+            <h:outputText id="topic_moderated" value="  #{msgs.cdfm_topic_moderated_flag}"  styleClass="textPanelFooter" rendered="#{ForumTool.selectedTopic.topic.moderated == 'true'}" />
+
+            <%--
+					  <h:outputText value=" #{msgs.cdfm_openb}" styleClass="textPanelFooter"/>
 					  <h:outputText value="123 messages - 5 unread" styleClass="textPanelFooter todo" />
-					  <h:outputText id="topic_moderated" value="  #{msgs.cdfm_topic_moderated_flag}"  styleClass="textPanelFooter" rendered="#{ForumTool.selectedTopic.topic.moderated == 'true'}" />
 					  <h:outputText value="#{msgs.cdfm_closeb}" styleClass="textPanelFooter"/>
 					  --%>
 					  <h:outputText value=" "  styleClass="actionLinks"/>
-					
+
 
 
 					<h:outputText   value="#{ForumTool.selectedTopic.topic.shortDescription}" rendered="#{ForumTool.selectedTopic.topic.shortDescription} != ''}"  styleClass="shortDescription" />
-					
-					
-					
+
+
+
 						<h:outputLink id="forum_extended_show" value="#" title="#{msgs.cdfm_view}" styleClass="show"
 								rendered="#{!empty ForumTool.selectedTopic.attachList || ForumTool.selectedTopic.topic.extendedDescription != '' && ForumTool.selectedTopic.topic.extendedDescription != null && ForumTool.selectedTopic.topic.extendedDescription != '<br/>'}"
 							onclick="resize();$(this).next('.hide').toggle(); $('div.toggle').slideToggle(resize);$(this).toggle();">
@@ -226,9 +242,9 @@
 								<h:outputText value=" #{msgs.cdfm_and}" rendered="#{!empty ForumTool.selectedTopic.attachList && ForumTool.selectedTopic.topic.extendedDescription != '' && ForumTool.selectedTopic.topic.extendedDescription != null && ForumTool.selectedTopic.topic.extendedDescription != '<br/>'}"/>
 								<h:outputText value=" #{msgs.cdfm_attach}" rendered="#{!empty ForumTool.selectedTopic.attachList}"/>
 					  </h:outputLink>
-				   
-			
-					<h:outputLink id="forum_extended_hide" value="#" title="#{msgs.cdfm_hide}" style="display:none " styleClass="hide" 
+
+
+					<h:outputLink id="forum_extended_hide" value="#" title="#{msgs.cdfm_hide}" style="display:none " styleClass="hide"
 								rendered="#{!empty ForumTool.selectedTopic.attachList || ForumTool.selectedTopic.topic.extendedDescription != '' && ForumTool.selectedTopic.topic.extendedDescription != null && ForumTool.selectedTopic.topic.extendedDescription != '<br/>'}"
 							onclick="resize();$(this).prev('.show').toggle(); $('div.toggle').slideToggle(resize);$(this).toggle();">
 								<h:graphicImage url="/images/expand.gif" alt="" /><h:outputText value="#{msgs.cdfm_hide}" />
@@ -236,26 +252,26 @@
 								<h:outputText value=" #{msgs.cdfm_and}" rendered="#{!empty ForumTool.selectedTopic.attachList && ForumTool.selectedTopic.topic.extendedDescription != '' && ForumTool.selectedTopic.topic.extendedDescription != null && ForumTool.selectedTopic.topic.extendedDescription != '<br/>'}"/>
 								<h:outputText value=" #{msgs.cdfm_attach}" rendered="#{!empty ForumTool.selectedTopic.attachList}"/>
 					  </h:outputLink>
-					
+
 					<f:verbatim><div class="toggle" style="display:none"></f:verbatim>
-						<mf:htmlShowArea  id="forum_fullDescription" hideBorder="true"	 value="#{ForumTool.selectedTopic.topic.extendedDescription}"/> 
+						<mf:htmlShowArea  id="forum_fullDescription" hideBorder="true"	 value="#{ForumTool.selectedTopic.topic.extendedDescription}"/>
 						<h:dataTable styleClass="listHier" value="#{ForumTool.selectedTopic.attachList}" var="eachAttach" rendered="#{!empty ForumTool.selectedTopic.attachList}" cellpadding="3" cellspacing="0" columnClasses="attach,bogus" style="font-size:.9em;width:auto;margin-left:1em">
 					  <h:column>
-						<sakai:contentTypeMap fileType="#{eachAttach.attachment.attachmentType}" mapType="image" var="imagePath" pathPrefix="/library/image/"/>									
-						<h:graphicImage id="exampleFileIcon" value="#{imagePath}" alt=""  />						
+						<sakai:contentTypeMap fileType="#{eachAttach.attachment.attachmentType}" mapType="image" var="imagePath" pathPrefix="/library/image/"/>
+						<h:graphicImage id="exampleFileIcon" value="#{imagePath}" alt=""  />
 						</h:column>
 						<h:column>
 						<h:outputLink value="#{eachAttach.url}" target="_blank">
 							<h:outputText value="#{eachAttach.attachment.attachmentName}" />
-						</h:outputLink>				  
+						</h:outputLink>
 					</h:column>
 			  </h:dataTable>
 					<f:verbatim></div></f:verbatim>
 				</h:panelGroup>
-			</h:panelGrid>	
+			</h:panelGrid>
 				<%--<%@ include file="dfViewSearchBar.jsp"%> --%>
-				
-									
+
+
 				<f:verbatim><div class="post_move_links"></f:verbatim>
                     <%-- hidden link to call ForumTool.processMoveThread  --%>
                     <h:commandLink value="" action="#{ForumTool.processMoveThread}" id="hidden_move_message_commandLink" ></h:commandLink>
@@ -268,14 +284,14 @@
                     <h:outputText rendered="#{ForumTool.selectedTopic.isMovePostings}" value="#{msgs.move_thread}" />
 					<f:verbatim></a></f:verbatim>
 					<f:verbatim></div></f:verbatim>
-   		
+
 			<%--//designNote: need a rendered attribute here that will toggle the display of the table (if messages) or a textblock (class="instruction") if there are no messages--%>
-			<h:outputText styleClass="messageAlert" value="#{msgs.cdfm_postFirst_warning}" rendered="#{ForumTool.selectedTopic != null && ForumTool.needToPostFirst}"/>				
+			<h:outputText styleClass="messageAlert" value="#{msgs.cdfm_postFirst_warning}" rendered="#{ForumTool.selectedTopic != null && ForumTool.needToPostFirst}"/>
 			<h:outputText value="#{msgs.cdfm_no_messages}" rendered="#{ForumTool.selectedTopic == null || (empty ForumTool.selectedTopic.messages && !ForumTool.needToPostFirst)}"  styleClass="instruction" style="display:block"/>
-			<%--//gsilver: need a rendered attribute here that will toggle the display of the table (if messages) or a textblock (class="instruction") if there are no messages--%> 						
+			<%--//gsilver: need a rendered attribute here that will toggle the display of the table (if messages) or a textblock (class="instruction") if there are no messages--%>
             <div id="checkbox">
 			<mf:hierDataTable styleClass=" listHier  specialLink allMessages" id="messagesInHierDataTable" rendered="#{!empty ForumTool.messages}"  value="#{ForumTool.messages}" var="message" expanded="#{ForumTool.expanded}"
-					columnClasses="attach, attach,messageTitle,attach,bogus,bogus" cellspacing="0" cellpadding="0" style="border:none">		
+					columnClasses="attach, attach,messageTitle,attach,bogus,bogus" cellspacing="0" cellpadding="0" style="border:none">
 			<h:column id="_checkbox">
 				<f:facet name="header">
 				</f:facet>
@@ -291,7 +307,7 @@
 			<h:column id="_msg_subject">
 				<f:facet name="header">
 				        <h:outputLink value="#" title="#{msgs.sort_thread}">
-				          <h:outputText value="#{msgs.cdfm_thread}" /> 
+				          <h:outputText value="#{msgs.cdfm_thread}" />
 					</h:outputLink>
 				</f:facet>
 
@@ -321,10 +337,10 @@
     			    	<f:param value="#{ForumTool.selectedTopic.topic.baseForum.id}" name="forumId"/>
 					</h:commandLink>
 				</h:panelGroup>
-				
+
 					<h:panelGroup rendered="#{!message.deleted}" styleClass="firstChild">
-				
-					<h:outputText styleClass="messageNew" value=" #{msgs.cdfm_newflag}" rendered="#{!message.read}"/>	
+
+					<h:outputText styleClass="messageNew" value=" #{msgs.cdfm_newflag}" rendered="#{!message.read}"/>
 
 					<%-- message has been submitted and is pending approval by moderator --%>
 						<h:outputText value="#{msgs.cdfm_msg_pending_label}" styleClass="messagePending" rendered="#{message.msgPending}" />
@@ -335,7 +351,7 @@
 					<h:commandLink styleClass="messagetitlelink" action="#{ForumTool.processActionDisplayThread}" immediate="true" title="#{message.message.title}"
 						rendered="#{message.depth == 0}">
 				   		<h:outputText value="#{message.message.title}" rendered="#{message.read && message.childUnread == 0 }" />
-							
+
     	        		<h:outputText styleClass="unreadMsg" value="#{message.message.title}" rendered="#{!message.read || message.childUnread > 0}"/>
 	       	    		<f:param value="#{message.message.id}" name="messageId"/>
     	    	    	<f:param value="#{ForumTool.selectedTopic.topic.id}" name="topicId"/>
@@ -352,7 +368,7 @@
 				</h:panelGroup>
 
 					<%-- render the message that has not been deleted, what else? --%>
-				<h:panelGroup rendered="#{!message.deleted}">	          	
+				<h:panelGroup rendered="#{!message.deleted}">
 					<h:commandLink styleClass="messagetitlelink" action="#{ForumTool.processActionDisplayMessage}" immediate="true" title=" #{message.message.title}"
 						rendered="#{message.depth != 0}" >
 					   	<h:outputText value="#{message.message.title}" rendered="#{message.read}" />
@@ -364,33 +380,33 @@
 						<%-- //designNote: icon to mark as read, does it belong here? Is it the right icon? Is this functionality desired?--%>
 						<%--
 		          	<h:outputText value="  " />
-				
+
 						<h:graphicImage value="/images/trans.gif" rendered="#{!message.read}"
 							alt="#{msgs.cdfm_mark_as_read}" title="#{msgs.cdfm_mark_as_read}"
 							onclick="doAjax(#{message.message.id}, #{ForumTool.selectedTopic.topic.id}, this);" styleClass="markAsReadIcon"/>
-						--%>	
+						--%>
 				</h:panelGroup>
 					<%--  thread metadata (count) --%>
 					<%-- designNote: debug block --%>
 					<%--
-					<h:outputText value=" md: #{message.depth}" /> 
+					<h:outputText value=" md: #{message.depth}" />
 					<h:outputText value=" cc: #{message.childCount }" />
 					<h:outputText value=" cu: #{message.childUnread }" />
 					<h:outputText value= " mr: #{message.read}" />
 					--%>
                     <%-- // display  ('unread ') if unread message is>= 1 --%>
-                    <h:outputText styleClass="childrenNew" id="topic_msg_count55" value="  #{(message.childUnread) + (message.read ? 0 : 1)} #{msgs.cdfm_lowercase_unread_msg}" 
-                                  rendered="#{message.depth == 0 && ((message.childUnread) + (message.read ? 0 : 1)) >= 1}"/>     
-   
-                    <%-- // display ('unread ') with different style sheet if unread message is 0 --%>  
-                    <h:outputText styleClass="childrenNewZero" id="topic_msg_count57" value="  #{(message.childUnread) + (message.read ? 0 : 1)} #{msgs.cdfm_lowercase_unread_msg}" 
-                                  rendered="#{message.depth == 0 && ((message.childUnread) + (message.read ? 0 : 1)) == 0}"/> 
-                               
-                     <%-- // display singular ('message') if total message is 1--%>                   
+                    <h:outputText styleClass="childrenNew" id="topic_msg_count55" value="  #{(message.childUnread) + (message.read ? 0 : 1)} #{msgs.cdfm_lowercase_unread_msg}"
+                                  rendered="#{message.depth == 0 && ((message.childUnread) + (message.read ? 0 : 1)) >= 1}"/>
+
+                    <%-- // display ('unread ') with different style sheet if unread message is 0 --%>
+                    <h:outputText styleClass="childrenNewZero" id="topic_msg_count57" value="  #{(message.childUnread) + (message.read ? 0 : 1)} #{msgs.cdfm_lowercase_unread_msg}"
+                                  rendered="#{message.depth == 0 && ((message.childUnread) + (message.read ? 0 : 1)) == 0}"/>
+
+                     <%-- // display singular ('message') if total message is 1--%>
                      <h:outputText styleClass="textPanelFooter" id="topic_msg_count58" value="#{msgs.cdfm_of} #{message.childCount + 1} #{msgs.cdfm_lowercase_msg}"
                                    rendered="#{message.depth == 0 && message.childCount ==0}"  />
-                                                                           
-                     <%-- // display singular ('message') if total message is 0 or more than 1--%>                   
+
+                     <%-- // display singular ('message') if total message is 0 or more than 1--%>
                      <h:outputText styleClass="textPanelFooter" id="topic_msg_count59" value="#{msgs.cdfm_of} #{message.childCount + 1} #{msgs.cdfm_lowercase_msgs}"
                                    rendered="#{message.depth == 0 && message.childCount >=1}"  />
 				<%-- NOT moved--%>
@@ -401,7 +417,7 @@
 				<f:facet name="header">
 						<h:outputText value="&nbsp;" escape="false"/>
 					</f:facet>
-               	
+
 					<h:graphicImage value="/images/trans.gif" rendered="#{message.read}" style="margin-left:.5em" alt="" />
 					<h:graphicImage value="/images/trans.gif" rendered="#{!message.read}"
 						alt="#{msgs.cdfm_mark_as_read}" title="#{msgs.cdfm_mark_as_read}"
@@ -437,7 +453,7 @@
 						<f:convertDateTime pattern="#{msgs.date_format}" timeZone="#{ForumTool.userTimeZone}" locale="#{ForumTool.userLocale}"/>
 					</h:outputText>
 				</h:panelGroup>
-			</h:column> 
+			</h:column>
 		</mf:hierDataTable>
 </div>
 
@@ -445,14 +461,14 @@
 <h:panelGrid columns="1" width="100%" styleClass="specialLink">
 	 <h:panelGroup styleClass="itemNav">
 	   <h:outputText   value="#{msgs.cdfm_previous_topic}"  rendered="#{!ForumTool.selectedTopic.hasPreviousTopic}" />
-		 <h:commandLink action="#{ForumTool.processActionDisplayPreviousTopic}" value="#{msgs.cdfm_previous_topic}"  rendered="#{ForumTool.selectedTopic.hasPreviousTopic}" 
+		 <h:commandLink action="#{ForumTool.processActionDisplayPreviousTopic}" value="#{msgs.cdfm_previous_topic}"  rendered="#{ForumTool.selectedTopic.hasPreviousTopic}"
 		                title=" #{msgs.cdfm_previous_topic}">
 			 <f:param value="#{ForumTool.selectedTopic.previousTopicId}" name="previousTopicId"/>
 			 <f:param value="#{ForumTool.selectedForum.forum.id}" name="forumId"/>
 		 </h:commandLink>
-		 <f:verbatim><h:outputText  id="blankSpace2" value=" |  " /></f:verbatim>				
+		 <f:verbatim><h:outputText  id="blankSpace2" value=" |  " /></f:verbatim>
 		 <h:outputText   value="#{msgs.cdfm_next_topic}" rendered="#{!ForumTool.selectedTopic.hasNextTopic}" />
-		 <h:commandLink action="#{ForumTool.processActionDisplayNextTopic}" value="#{msgs.cdfm_next_topic}" rendered="#{ForumTool.selectedTopic.hasNextTopic}" 
+		 <h:commandLink action="#{ForumTool.processActionDisplayNextTopic}" value="#{msgs.cdfm_next_topic}" rendered="#{ForumTool.selectedTopic.hasNextTopic}"
 		                title=" #{msgs.cdfm_next_topic}">
 			<f:param value="#{ForumTool.selectedTopic.nextTopicId}" name="nextTopicId"/>
 			<f:param value="#{ForumTool.selectedForum.forum.id}" name="forumId"/>
@@ -461,14 +477,14 @@
 </h:panelGrid>
 
 
-		
+
 <input type="hidden" id="selectedTopicid" name="selectedTopicid" class="selectedTopicid" value="0" />
 <input type="hidden" id="moveReminder" name="moveReminder" class="moveReminder" value="false" />
 
 		<h:inputHidden id="mainOrForumOrTopic" value="dfAllMessages" />
 		<%
   String thisId = request.getParameter("panel");
-  if (thisId == null) 
+  if (thisId == null)
   {
     thisId = "Main" + org.sakaiproject.tool.cover.ToolManager.getCurrentPlacement().getId();
   }
@@ -477,11 +493,11 @@
 			function resize(){
   				mySetMainFrameHeight('<%= org.sakaiproject.util.Web.escapeJavascript(thisId)%>');
   			}
-			</script> 
+			</script>
 <h:outputText escape="false" value="<script type='text/javascript'>$(document).ready(function() {setupLongDesc()});</script>"  rendered="#{!ForumTool.showShortDescription}"/>
 	</h:form>
 
 	<h:outputText value="#{msgs.cdfm_insufficient_privileges_view_topic}" rendered="#{ForumTool.selectedTopic.topic.draft && ForumTool.selectedTopic.topic.createdBy != ForumTool.userId}" />
-		
+
 </sakai:view>
 </f:view>
