@@ -30,14 +30,13 @@
 
 	 $(document).ready(function() {
 		$('#save').click(function() {
-			if ($('#group_title').val() === "") {
+			if ($('#group_title').val() == "") {
 		   		$('.messageValidation').show();
 		   		$('#group_title').focus();
 		   		return false;
 		  	}
 			else
 			{
-				SPNR.disableControlsAndSpin( this, escapeList );
 				return true;
 			}
 		});
