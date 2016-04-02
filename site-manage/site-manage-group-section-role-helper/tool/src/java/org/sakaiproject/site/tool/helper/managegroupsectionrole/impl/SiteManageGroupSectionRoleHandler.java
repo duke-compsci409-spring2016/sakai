@@ -623,7 +623,7 @@ public class SiteManageGroupSectionRoleHandler {
         title = StringUtils.trimToNull(title);
     	if (title == null) 
     	{
-    		messages.addMessage(new TargettedMessage("editgroup.titlemissing",new Object[]{}, TargettedMessage.SEVERITY_ERROR));
+    		messages.addMessage(new TargettedMessage("editgroup.titlemissing",new Object[]{"editgroup.titlemissing error"}, TargettedMessage.SEVERITY_ERROR));
     		return null;
     	}
     	else if (title.length() > SiteConstants.SITE_GROUP_TITLE_LIMIT)
