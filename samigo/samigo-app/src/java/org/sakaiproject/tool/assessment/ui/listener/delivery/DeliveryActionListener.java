@@ -312,7 +312,7 @@ public class DeliveryActionListener
 
               if (ae != null && ae.getComponent().getId().startsWith("beginAssessment")) {
             	  // #1. check password
-            	  if (!delivery.getSettings().getUsername().equals(""))
+            	  if (!delivery.getSettings().getPassword().equals(""))
             	  {
             		  if ("passwordAccessError".equals(delivery.validatePassword())) {
             			  return;
@@ -2949,9 +2949,15 @@ public class DeliveryActionListener
 	service.extractCalcQAnswersArray(answersMap, item, gradingId, agentId); // return value not used, answersMap is populated
 	
 	int answerSequence = 1; // this corresponds to the sequence value assigned in extractCalcQAnswersArray()
+	int decimalPlaces = 3;
 	while(answerSequence <= answersMap.size()) {
-			String answer = (String)answersMap.get(answerSequence);
+		  String answer = (String)answersMap.get(answerSequence);
+		  decimalPlaces = Integer.valueOf(answer.substring(answer.indexOf(',')+1, answer.length()));
 		  answer = answer.substring(0, answer.indexOf("|")); // cut off extra data e.g. "|2,3"
+		  
+		  // We need the key formatted in scientificNotation
+		  answer = service.toScientificNotation(answer, decimalPlaces);
+		  
 		  keysString = keysString.concat(answer + ",");
 		  answerSequence++;
 	  }

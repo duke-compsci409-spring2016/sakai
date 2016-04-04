@@ -36,21 +36,17 @@ function GradebookSpreadsheet($spreadsheet) {
   // critical path of the page load
   this.onReady(function() {
     self.setupKeyboadNavigation();
-    self.setupFixedColumns();
-
+    setTimeout(function(){ self.setupFixedColumns(); });
     // only setup the fixed header if categies are not enabled
     // otherwise they'll be setup post group-by-category
     if (!$("#toggleCategoriesToolbarItem").hasClass("on")) {
       self.setupFixedTableHeader();
     }
-
-    self.setupColumnDragAndDrop();
+    setTimeout(function() { self.setupColumnDragAndDrop(); });
     self.setupRowSelector();
     self.setupConcurrencyCheck();
     self.setupStudentFilter();
-
     self.setupMenusAndPopovers();
-
     self.setupNewAssignmentFocus();
   });
 
@@ -79,44 +75,61 @@ GradebookSpreadsheet.prototype.getCellModelForWicketParams = function(wicketExtr
 
 GradebookSpreadsheet.prototype.setupGradeItemCellModels = function() {
   var self = this;
+  //var t = Date.now();
 
-  var tmpHeaderByIndex = [];
+//  var tmpHeaderByIndex = [];
 
-  self.$table.find("> thead > tr > th").each(function(cellIndex, cell) {
+  self.$table.find("> thead > tr.gb-headers > th").each(function(cellIndex, cell) {
     var $cell = $(cell);
 
     var model = new GradebookHeaderCell($cell, self);
 
-    tmpHeaderByIndex.push(model);
+    //tmpHeaderByIndex.push(model);
   });
 
-
-  self.$table.find("> tbody > tr").each(function(rowIdx, row) {
-    var $row = $(row);
-    var studentUuid = $row.find(".gb-student-cell").data("studentuuid");
-    $row.data("studentuuid", studentUuid);
-
-    self._GRADE_CELLS[studentUuid] = {};
-
-    $row.find("> th, > td").each(function(cellIndex, cell) {
-      var $cell = $(cell);
-      var cellIndex = $cell.index();
-
-      var cellModel;
-
-      if (self.isCellEditable($cell)) {
-        cellModel = new GradebookEditableCell($cell, tmpHeaderByIndex[cellIndex], self);
-
-        self._GRADE_CELLS[studentUuid][cellModel.header.columnKey] = cellModel;
-      } else if (self.isCellForExternalItem($cell) || self.isCellForCategoryScore($cell)) {
-        cellModel = new GradebookBasicCell($cell, tmpHeaderByIndex[cellIndex], self);
-
-        self._GRADE_CELLS[studentUuid][cellModel.header.columnKey] = cellModel;
-      } else {
-        cellModel = new GradebookBasicCell($cell, tmpHeaderByIndex[cellIndex], self);
-      }
-    });
+  self.$table.on("focus", "td, th", function(event) {
+    // lazy load model
+    self.getCellModel($(this));
   });
+
+  self.$table.on("focus", "td.gb-grade-item-cell :text", function(event) {
+    // lazy load model
+    self.getCellModel($(event.target).closest("td"));
+  });
+
+  function setupContextMenu($cell) {
+    // ensure model
+    self.getCellModel($cell);
+
+    // append menu
+    $cell.find("> div:first").append($("#gradeItemCellDropdownMenu").html());
+
+    // setup tooltip
+    var $dropdown = $cell.find(".dropdown-toggle");
+    var tooltip = $dropdown.attr("title");
+    tooltip = tooltip.replace("{0}", self.getCellModel($cell).getRow().find(".gb-student-cell:first").attr("abbr"));
+    tooltip = tooltip.replace("{1}", self.getCellModel($cell).header.$cell.attr("abbr"));
+    $dropdown.attr("title", tooltip);
+
+    $cell.data("has-dropdown", true);
+  };
+
+  self.$table.on("focus", "td.gb-grade-item-cell", function(event) {
+    var $cell = $(event.target).closest(".gb-grade-item-cell");
+    if (!$cell.data("has-dropdown")) {
+      setupContextMenu($cell);
+    }
+    return true;
+  });
+
+  self.$table.find(".gb-grade-item-cell, .gb-grade-item-cell :text").hover(function(event) {
+    var $cell = $(event.target).closest(".gb-grade-item-cell");
+    if (!$cell.data("has-dropdown")) {
+      setupContextMenu($cell);
+    }
+  }, function() {
+    
+  })
 };
 
 
@@ -165,7 +178,7 @@ GradebookSpreadsheet.prototype.onKeydown = function(event) {
 
   // 0-9 48-57 and keypad 0-9 96-105
   } else if (isEditableCell &&
-      ((event.keyCode >= 48 && event.keyCode <= 57) || (e.keyCode >= 96 && e.keyCode <= 105))) {
+      ((event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105))) {
     event.preventDefault();
     self.getCellModel($eventTarget).enterEditMode(event.keyCode);
 
@@ -224,7 +237,7 @@ GradebookSpreadsheet.prototype.navigate = function(event, fromCell, direction, e
 
       if ($targetRow.length == 0) {
         // all rows above are hidden! Jump to the header
-        $targetRow = self.$table.find("> thead > tr:last");
+        $targetRow = self.$table.find("> thead > tr.gb-headers");
       }
 
       $targetCell = $targetRow.find("> *:nth-child("+($cell.index()+1)+")");
@@ -234,7 +247,7 @@ GradebookSpreadsheet.prototype.navigate = function(event, fromCell, direction, e
       event.preventDefault();
       event.stopPropagation();
 
-      $targetCell = self.$table.find("> thead > tr:last").
+      $targetCell = self.$table.find("> thead > tr.gb-headers").
                       find("> *:nth-child("+($cell.index()+1)+")");
 
     // or are we at the top!
@@ -260,16 +273,15 @@ GradebookSpreadsheet.prototype.navigate = function(event, fromCell, direction, e
     }
   }
 
-  //Disable auto-editmode for now until latency issues are investigated.
-  //With a 1-2 latency, the navigation from edit-mode to edit-mode doesn't flow
-  //well when navigating quickly through the cells.
-  //if (enableEditMode && $targetCell && $(fromCell) != $targetCell) {
-  //  var model = self.getCellModel($targetCell);
-  //  if (model.isEditable()) {
-  //    model.enterEditMode();
-  //  }
-  //} else if ($targetCell) {
-  if ($targetCell && $targetCell.is(":visible")) {
+  // stay in "edit mode" if the next cell is editable
+  if (enableEditMode && $targetCell && $cell != $targetCell) {
+    var targetCellModel = self.getCellModel($targetCell);
+    if (targetCellModel.isEditable()) {
+      targetCellModel.enterEditMode();
+    } else {
+      $targetCell.focus();
+    }
+  } else if ($targetCell && $targetCell.is(":visible")) {
     $targetCell.focus();
   } else {
     // ensure the table retains focus to facilitate continuation of keyboard navigation
@@ -294,7 +306,7 @@ GradebookSpreadsheet.prototype.ensureCellIsVisible = function($cell) {
     var $header = self.getHeader();
     var headerBottomPosition = $header[0].offsetTop + $header[0].offsetHeight;
     if ($cell[0].offsetTop < headerBottomPosition) {
-      $(document).scrollTop($(document).scrollTop() - (headerBottomPosition - ($cell[0].offsetTop - $cell.height())));
+      $(window).scrollTop($(window).scrollTop() - (headerBottomPosition - ($cell[0].offsetTop - $cell.height())));
     }
   }
 };
@@ -316,12 +328,44 @@ GradebookSpreadsheet.prototype.isCellForCategoryScore = function($cell) {
 
 
 GradebookSpreadsheet.prototype.getCellModelForStudentAndAssignment = function(studentUuid, assignmentId) {
+  if (this._GRADE_CELLS.hasOwnProperty(studentUuid) && this._GRADE_CELLS[studentUuid].hasOwnProperty(assignmentId)) {
+    return this._GRADE_CELLS[studentUuid][assignmentId];
+  }
+
+  if (!this._GRADE_CELLS.hasOwnProperty(studentUuid)) {
+    this._GRADE_CELLS[studentUuid] = {};
+  }
+
+  if (!this._GRADE_CELLS[studentUuid].hasOwnProperty(assignmentId)) {
+    var $cell = this.$table.find("> tbody td[data-studentuuid='"+studentUuid+"'][data-assignmentid='"+assignmentId+"']:first");
+    var $header = this.$table.find("> thead > tr:last [data-assignmentid='"+assignmentId+"']:first").closest("th");
+
+    if (this.isCellEditable($cell)) {
+      cellModel = new GradebookEditableCell($cell, this.getCellModel($header), this);
+    } else if (this.isCellForExternalItem($cell) || this.isCellForCategoryScore($cell)) {
+      cellModel = new GradebookBasicCell($cell, this.getCellModel($header), this);
+    } else {
+      cellModel = new GradebookBasicCell($cell, this.getCellModel($header), this);
+    }
+    this._GRADE_CELLS[studentUuid][assignmentId] = cellModel;
+  }
+
   return this._GRADE_CELLS[studentUuid][assignmentId];
 };
 
 
 GradebookSpreadsheet.prototype.getCellModel = function($cell) {
-  return $cell.data("model");
+  if ($cell.data("model")) {
+    return $cell.data("model");
+  }
+
+  if ($cell.data("studentuuid") && $cell.data("assignmentid")) {
+    return this.getCellModelForStudentAndAssignment($cell.data("studentuuid"), $cell.data("assignmentid"));
+  }
+
+  var headerModel = this.getCellModel(this.$table.find("> thead > tr:last > th:eq(" + $cell.index() + ")"));
+
+  return new GradebookBasicCell($cell, headerModel, this);
 };
 
 
@@ -345,7 +389,8 @@ GradebookSpreadsheet.prototype.handleInputArrowKey = function(event, $cell) {
 
 
 GradebookSpreadsheet.prototype.handleInputTab = function(event, $cell) {
-  this.navigate(event, $cell, event.shiftKey ? "left" : "right", true);
+  // default to standard tab flow
+  return true;
 };
 
 
@@ -375,11 +420,14 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
                         attr("role", "presentation").
                         hide();
 
+  var $fixedHeaderHead = $("<thead>");
+  self.$fixedHeader.append($fixedHeaderHead);
+
   $head.find("> tr").each(function() {
     var $tr = $(this);
 
-    if ($tr.hasClass("headers")) {
-      var $cloneRow = $("<tr>").addClass("headers");
+    if ($tr.hasClass("gb-headers")) {
+      var $cloneRow = $("<tr>").addClass("gb-headers");
       $.each($tr.find("> td, > th"), function(i, th) {
         var $th = $(th);
         var $clone = self._cloneCell($th);
@@ -390,9 +438,9 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
         }
         $cloneRow.append($clone);
       });
-      self.$fixedHeader.append($cloneRow);
+      $fixedHeaderHead.append($cloneRow);
     } else {
-      self.$fixedHeader.append(self._cloneCell($tr));
+      $fixedHeaderHead.append(self._cloneCell($tr));
     }
   });
 
@@ -400,15 +448,15 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
 
   if (reset && self.$fixedColumnsHeader) {
     // ensure the $fixedColumnsHeader and $fixedHeader are the same height
-    self.$fixedColumnsHeader.find("> tr.headers > th").height(self.$fixedHeader.find(".headers th:first").height());
+    self.$fixedColumnsHeader.find("> tr.gb-headers > th").height(self.$fixedHeader.find(".headers th:first").height());
   }
 
   self.$fixedHeader.find("th").on("mousedown", function(event) {
     event.preventDefault();
 
-    $(document).scrollTop(self.$table.offset().top - 10);
+    $(window).scrollTop(self.$table.offset().top - 10);
     // find the header row (last in the thead) and get the corresponding th element
-    var $target = $(self.$table.find("> thead > tr:last > *").get($(this).index()));
+    var $target = $(self.$table.find("> thead > tr.gb-headers > *").get($(this).index()));
 
     self.$spreadsheet.data("activeCell", $target);
 
@@ -419,7 +467,7 @@ GradebookSpreadsheet.prototype.setupFixedTableHeader = function(reset) {
     }
   });
 
-  self._fixedThingsAreReady = true;
+  self._fixedThingsAreReady += 1;
 };
 
 
@@ -432,7 +480,6 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
   var self = this;
 
   // all columns before the grade item columns should be fixed
-
   self.$fixedColumnsHeader = $("<table>").attr("class", self.$table.attr("class")).
                                           addClass("gb-fixed-column-headers-table").
                                           attr("role", "presentation").
@@ -443,14 +490,13 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
                                     attr("role", "presentation").
                                     hide();
 
-//  var $headers = self.$table.find("thead tr > *:not(.gb-grade-item-column-cell, .gb-category-item-column-cell)");
-  var $headers = self.$table.find("> thead > tr.headers > th").slice(0,3);
+  var $headers = self.$table.find("> thead > tr.gb-headers > th").slice(0,3);
   var $thead = $("<thead>");
   // append a dummy header row for when categorised
   $thead.append($("<tr>").addClass("gb-categories-row").append($("<th>").attr("colspan", $headers.length)));
 
-  // add the row for all cloned cells
-  $thead.append($("<tr>").addClass("gb-clone-row").addClass("headers"));
+ // add the row for all cloned cells
+  $thead.append($("<tr>").addClass("gb-clone-row").addClass("gb-headers"));
   self.$fixedColumnsHeader.append($thead);
 
   self.$fixedColumns.append($("<tbody>"));
@@ -462,16 +508,13 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
   });
 
   // populate the dummy column table
+  var $tbody = $("<tbody>");
   self.$table.find("> tbody > tr").each(function(i, origRow) {
     var $tr = $("<tr>");
-
-    $headers.each(function(i, origTh) {
-      var $td = self._cloneCell($($(origRow).find("> td").get(i)));
-      $tr.append($td);
-    });
-
-    self.$fixedColumns.find("> tbody").append($tr);
+    self._cloneCells($(origRow).find(" > :lt(3)")).appendTo($tr);
+    $tbody.append($tr);
   });
+  self.$fixedColumns.append($tbody);
 
   self.$spreadsheet.prepend(self.$fixedColumnsHeader);
   self.$spreadsheet.prepend(self.$fixedColumns);
@@ -490,9 +533,9 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
   // Clicks on the fixed header return you to the real header cell
   self.$fixedColumnsHeader.find("> thead > tr > *").on("mousedown", function(event) {
     event.preventDefault();
-    $(document).scrollTop(self.$table.offset().top - 10);
+    $(window).scrollTop(self.$table.offset().top - 10);
     self.$spreadsheet.scrollLeft(0);
-    var $targetCell = $(self.$table.find("> thead > tr:last > *").get($(this).index()));
+    var $targetCell = $(self.$table.find("> thead > tr.gb-headers > *").get($(this).index()));
 
     self.$spreadsheet.data("activeCell", $targetCell);
 
@@ -509,7 +552,7 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
     self.$spreadsheet.scrollLeft(0);
     var cellIndex = $(this).index();
     var rowIndex = $(this).closest("tr").index();
-    $targetCell = $($(self.$table.find("> tbody > tr").get(rowIndex)).find("> td").get(cellIndex));
+    $targetCell = $($(self.$table.find("> tbody > tr").get(rowIndex)).find("> *").get(cellIndex));
 
     self.$spreadsheet.data("activeCell", $targetCell);
 
@@ -519,6 +562,8 @@ GradebookSpreadsheet.prototype.setupFixedColumns = function() {
       $targetCell.focus();
     }
   });
+
+  self._fixedThingsAreReady += 1;
 };
 
 
@@ -532,6 +577,7 @@ GradebookSpreadsheet.prototype.setupScrollHandling = function() {
 };
 
 
+GradebookSpreadsheet.prototype._fixedThingsAreReady = 0;
 GradebookSpreadsheet.prototype.handleScrollEvent = function() {
   var self = this;
 
@@ -540,7 +586,7 @@ GradebookSpreadsheet.prototype.handleScrollEvent = function() {
       self.$fixedColumns.
           show().
           css("left", self.$horizontalOverflow.offset().left).
-          css("top", self.$table.find("tbody").offset().top - document.body.scrollTop);
+          css("top", self.$table.find("tbody").offset().top - $(window).scrollTop());
     } else {
       self.$fixedColumns.hide();
     }
@@ -549,21 +595,21 @@ GradebookSpreadsheet.prototype.handleScrollEvent = function() {
   function positionFixedColumnHeader() {
     var showFixedHeader = false;
     var leftOffset = self.$horizontalOverflow.offset().left;
-    var topOffset = Math.max(0, self.$table.offset().top - document.body.scrollTop);
+    var topOffset = Math.max(0, self.$table.offset().top - $(window).scrollTop());
 
-    if (self.$horizontalOverflow[0].scrollLeft > 0 || self.$table.offset().top < $(document).scrollTop()) {
+    if (self.$horizontalOverflow[0].scrollLeft > 0 || self.$table.offset().top < $(window).scrollTop()) {
       if (self.$horizontalOverflow[0].scrollLeft > 0) {
         showFixedHeader = true;
       }
 
-      if ($(document).scrollTop() + self.$fixedColumnsHeader.height() + 80 > self.$table.offset().top + self.$table.height()) {
+      if ($(window).scrollTop() + self.$fixedColumnsHeader.height() + 80 > self.$table.offset().top + self.$table.height()) {
         // don't change anything as we don't want the fixed header to scroll to below the table
         topOffset = self.$fixedColumnsHeader.position().top;
         // except check for the horizontal scroll
         if (self.$horizontalOverflow[0].scrollLeft == 0) {
           showFixedHeader = true;
         }
-      } else if (self.$table.offset().top < $(document).scrollTop()) {
+      } else if (self.$table.offset().top < $(window).scrollTop()) {
         showFixedHeader = true
       }
     }
@@ -576,14 +622,14 @@ GradebookSpreadsheet.prototype.handleScrollEvent = function() {
   }
 
   function positionFixedHeader() {
-    if ($(document).scrollTop() + self.$fixedHeader.height() + 80 > self.$table.offset().top + self.$spreadsheet.height()) {
+    if ($(window).scrollTop() + self.$fixedHeader.height() + 80 > self.$table.offset().top + self.$spreadsheet.height()) {
       // don't change anything as we don't want the fixed header to scroll to below the table
-    } else if (self.$table.offset().top < $(document).scrollTop()) {
+    } else if (self.$table.offset().top < $(window).scrollTop()) {
       var forceCategoryLabelRefresh = self.$fixedHeader.is(":not(:visible)");
 
       self.$fixedHeader.
           show().
-          css("top", $(document).scrollTop() - self.$spreadsheet.offset().top + "px").
+          css("top", $(window).scrollTop() - self.$spreadsheet.offset().top + "px").
           css("left", -self.$horizontalOverflow.scrollLeft() + "px");
 
       if (forceCategoryLabelRefresh) {
@@ -596,7 +642,7 @@ GradebookSpreadsheet.prototype.handleScrollEvent = function() {
 
   window.cancelAnimationFrame(self.scrollRequest);
   self.scrollRequest = window.requestAnimationFrame(function() {
-    if (self._fixedThingsAreReady) {
+    if (self._fixedThingsAreReady > 1) {
       positionFixedColumn();
       positionFixedColumnHeader();
       positionFixedHeader();
@@ -749,6 +795,10 @@ GradebookSpreadsheet.prototype.setupColumnDragAndDrop = function() {
     addClasses: false,
     helper: function(event, ui, foo) {
       var $cell = $(event.currentTarget);
+      if ($cell[0] == document) {
+        // drag was initiated on a fixed header cell so figure out which cell we really want
+        $cell = self.$table.find("thead > tr:last > :eq("+$(event.target).closest("th").index()+")");
+      }
       var $clone = self._cloneCell($cell);
       $clone.data("model", $cell.data("model"));
 
@@ -783,6 +833,18 @@ GradebookSpreadsheet.prototype.setupToolbar = function() {
   this.toolbarModel = new GradebookToolbar($("#gradebookGradesToolbar"), this);
 };
 
+GradebookSpreadsheet.prototype._cloneCells = function($cells) {
+  var $clones = $cells.clone();
+  $clones.find("[id]").andSelf().each(function() {
+    $(this).data("id", $(this).attr("id")).removeAttr("id");
+  });
+
+  // set the width/height
+  $($clones.get(0)).height($($cells.get(0)).outerHeight());
+  $($clones.get(0)).width($($cells.get(0)).outerWidth());
+
+  return $clones;
+};
 
 GradebookSpreadsheet.prototype._cloneCell = function($cell) {
   // clone and sanitize the $cell so it can be used in a fixed header/column
@@ -808,7 +870,7 @@ GradebookSpreadsheet.prototype.enableGroupByCategory = function() {
   var self = this;
 
   var currentCategory, newColIndex = 3;
-  var $categoriesRow = self.$spreadsheet.find("#gradebookFixedThings").find(".gb-categories-row");
+  var $categoriesRow = self.$spreadsheet.find(".gb-categories-row");
 
   $.each(self._ALL_CATEGORIES, function(i, category) {
     var cellsForCategory = self._CATEGORIES_MAP[category];
@@ -852,31 +914,26 @@ GradebookSpreadsheet.prototype.enableGroupByCategory = function() {
     }
   });
 
-  self.$table.find("> thead:first").prepend($categoriesRow);
-  self.$spreadsheet.addClass("gb-grouped-by-category");
+  self.refreshFixedTableHeader(true);
+  self.refreshHiddenVisualCue();
 
-  setTimeout(function() {
-    self.refreshFixedTableHeader(true);
-    self.refreshHiddenVisualCue();
+  // setup category header text so it is visible when horizontal scrolling
+  function setupScrollHandlerToUpdateCategoryLabelPosition(event) {
+    if (self.$spreadsheet.data("categoryScrollTimeout")) {
+      clearTimeout(self.$spreadsheet.data("categoryScrollTimeout"));
+    }
+    // only reposition every 100ms after a scroll.. to avoid too
+    // many repositions
+    self.$spreadsheet.data("categoryScrollTimeout", setTimeout(function() {
+      self.updateCategoryLabelPositions();
+    }, 500)); // only refresh 0.5sec after scrolling has finished
+  };
 
-    // setup category header text so it is visible when horizontal scrolling
-    function setupScrollHandlerToUpdateCategoryLabelPosition(event) {
-      if (self.$spreadsheet.data("categoryScrollTimeout")) {
-        clearTimeout(self.$spreadsheet.data("categoryScrollTimeout"));
-      }
-      // only reposition every 100ms after a scroll.. to avoid too
-      // many repositions
-      self.$spreadsheet.data("categoryScrollTimeout", setTimeout(function() {
-        self.updateCategoryLabelPositions();
-      }, 500)); // only refresh 0.5sec after scrolling has finished
-    };
+  self.$horizontalOverflow.
+    off("scroll refreshcategorylabels.aspace", setupScrollHandlerToUpdateCategoryLabelPosition).
+    on("scroll refreshcategorylabels.aspace", setupScrollHandlerToUpdateCategoryLabelPosition);
 
-    self.$horizontalOverflow.
-      off("scroll refreshcategorylabels.aspace", setupScrollHandlerToUpdateCategoryLabelPosition).
-      on("scroll refreshcategorylabels.aspace", setupScrollHandlerToUpdateCategoryLabelPosition);
-
-    self.$horizontalOverflow.trigger("scroll"); // force redraw of the fixed columns
-  });
+  self.$horizontalOverflow.trigger("scroll"); // force redraw of the fixed columns
 };
 
 
@@ -946,8 +1003,8 @@ GradebookSpreadsheet.prototype._refreshColumnOrder = function() {
   self._ALL_CATEGORIES = [];
   self._CATEGORY_DATA = {};
 
-  self._COLUMN_ORDER = self.$table.find("> thead > tr > th.gb-grade-item-column-cell").map(function() {
-    return $(this).data("model");
+  self._COLUMN_ORDER = self.$table.find("> thead > tr.gb-headers > th.gb-grade-item-column-cell").map(function() {
+    return self.getCellModel($(this));
   });
 
   self_COLUMN_ORDER = self._COLUMN_ORDER.sort(function(a, b) {
@@ -973,7 +1030,7 @@ GradebookSpreadsheet.prototype._refreshColumnOrder = function() {
   });
 
   // take note of any category total column headers
-  self.$table.find("> thead > tr > th.gb-category-item-column-cell").each(function() {
+  self.$table.find("> thead > tr.gb-headers > th.gb-category-item-column-cell").each(function() {
     var $th = $(this);
     var model = $th.data("model");
     var category = $th.find("[data-category]:first").data("category");
@@ -1033,16 +1090,14 @@ GradebookSpreadsheet.prototype.getCategoriesMap = function() {
 
 
 GradebookSpreadsheet.prototype.getHeaderModelForAssignment = function(assignmentId) {
-  return this.$table.find("thead .gb-grade-item-column-cell [data-assignmentid='" + assignmentId + "']").closest(".gb-grade-item-column-cell").data("model");
+  return this.$table.find("thead .gb-headers .gb-grade-item-column-cell [data-assignmentid='" + assignmentId + "']").closest(".gb-grade-item-column-cell").data("model");
 };
 
 
 GradebookSpreadsheet.prototype.showGradeItemColumn = function(assignmentId) {
   var headerModel = this.getHeaderModelForAssignment(assignmentId);
   headerModel.show();
-  $.each(this._GRADE_CELLS, function(studentId, assignmentsMap) {
-    assignmentsMap[assignmentId].show();
-  });
+  this.$table.find("> tbody > tr > *:eq("+headerModel.$cell.index()+")").show();
   this.refreshWidth();
 };
 
@@ -1050,9 +1105,7 @@ GradebookSpreadsheet.prototype.showGradeItemColumn = function(assignmentId) {
 GradebookSpreadsheet.prototype.hideGradeItemColumn = function(assignmentId) {
   var headerModel = this.getHeaderModelForAssignment(assignmentId);
   headerModel.hide();
-  $.each(this._GRADE_CELLS, function(studentId, assignmentsMap) {
-    assignmentsMap[assignmentId].hide();
-  });
+  this.$table.find("> tbody > tr > *:eq("+headerModel.$cell.index()+")").hide();
   this.refreshWidth();
 };
 
@@ -1089,7 +1142,7 @@ GradebookSpreadsheet.prototype.refreshHiddenVisualCue = function() {
   };
 
   this.$spreadsheet.find(".gb-hidden-column-visual-cue").remove();
-  $.each(self.$table.find("> thead > tr.headers > th"), function(i, th) {
+  $.each(self.$table.find("> thead > tr.gb-headers > th"), function(i, th) {
     var $th = $(th);
     if ($th.is(":not(:visible)")) {
       var $cue = $("<a>").attr("href", "javascript:void(0);").addClass("gb-hidden-column-visual-cue");
@@ -1106,18 +1159,16 @@ GradebookSpreadsheet.prototype.refreshHiddenVisualCue = function() {
 GradebookSpreadsheet.prototype.showCategoryScoreColumn = function(category) {
   var headerModel = this._CATEGORY_DATA[category].scoreHeaderModel;
   headerModel.show();
-  $.each(this._GRADE_CELLS, function(studentId, cellMap) {
-    cellMap[headerModel.columnKey].show();
-  });
+  this.$table.find("> tbody > tr > *:eq("+headerModel.$cell.index()+")").show();
+  this.refreshWidth();
 };
 
 
 GradebookSpreadsheet.prototype.hideCategoryScoreColumn = function(category) {
   var headerModel = this._CATEGORY_DATA[category].scoreHeaderModel;
   headerModel.hide();
-  $.each(this._GRADE_CELLS, function(studentId, cellMap) {
-    cellMap[headerModel.columnKey].hide();
-  });
+  this.$table.find("> tbody > tr > *:eq("+headerModel.$cell.index()+")").hide();
+  this.refreshWidth();
 };
 
 
@@ -1409,17 +1460,20 @@ GradebookSpreadsheet.prototype.enablePopovers = function($target) {
 
 
 GradebookSpreadsheet.prototype.ready = function() {
-  this.$spreadsheet.addClass("initialized").trigger("ready.gradebookng");
+  this.$spreadsheet.data("initialized", true);//.trigger("ready.gradebookng");
+  $.each(GradebookSpreadsheet.prototype._callbacks, function(i, callback) {
+    callback();
+  });
+  GradebookSpreadsheet.prototype._callbacks = null;
 }
 
+GradebookSpreadsheet.prototype._callbacks = [];
 
 GradebookSpreadsheet.prototype.onReady = function(callback) {
-  if (this.$spreadsheet.is(".initialized")) {
-    setTimeout(function() {
-      callback();
-    });
+  if (this.$spreadsheet.data("initialized") == true) {
+    setTimeout(function() { callback(); });
   } else {
-    this.$spreadsheet.on("ready.gradebookng", callback);
+    GradebookSpreadsheet.prototype._callbacks.push(callback);
   }
 };
 
@@ -1502,6 +1556,12 @@ GradebookSpreadsheet.prototype.editAssignmentFromFlag = function(assignmentId) {
 };
 
 
+GradebookSpreadsheet.prototype.positionModalAtTop = function($modal) {
+  // position the modal at the top of the viewport
+  // taking into account the current scroll offset
+  $modal.css('top', 30 + $(window).scrollTop() + "px");
+};
+
 /*************************************************************************************
  * AbstractCell - behaviour inherited by all cells
  */
@@ -1511,9 +1571,12 @@ var GradebookAbstractCell = {
     self.$cell = $cell;
     $cell.data("model", this);
     $cell.on("focus", function(event) {
-                 self.gradebookSpreadsheet.ensureCellIsVisible($(event.target));
-                 self.gradebookSpreadsheet.highlightRow(self.getRow());
-               });
+      self.gradebookSpreadsheet.ensureCellIsVisible($(event.target));
+      self.gradebookSpreadsheet.highlightRow(self.getRow());
+    });
+  },
+  getRow: function() {
+    return this.$cell.closest("tr");
   },
   show: function() {
     this.$cell.show();
@@ -1563,7 +1626,24 @@ GradebookEditableCell.prototype.setupEditableCell = function($cell) {
   this.$cell.data("wicket_label_initialized", true);
 
   this.setupInput();
+  this.setupMenu();
 };
+
+
+GradebookEditableCell.prototype.setupMenu = function() {
+  var self = this;
+  self.$cell.on("click", ".gb-view-log", function() {
+    self.$input.trigger("viewlog.sakai");
+    self.$cell.find(".dropdown-toggle").dropdown('toggle');
+    return false;
+  })
+  self.$cell.on("click", ".gb-edit-comments", function() {
+    self.$input.trigger("editcomment.sakai");
+    self.$cell.find(".dropdown-toggle").dropdown('toggle');
+    return false;
+  });
+};
+
 
 
 GradebookEditableCell.prototype.isEditable = function() {
@@ -1597,12 +1677,6 @@ GradebookEditableCell.prototype.setupInputKeyboardNavigation = function() {
   });
 };
 
-
-GradebookEditableCell.prototype.getRow = function() {
-  return this.$cell.closest("tr");
-};
-
-
 GradebookEditableCell.prototype.setupInput = function() {
   var self = this;
 
@@ -1625,8 +1699,11 @@ GradebookEditableCell.prototype.setupInput = function() {
 
     // add the "out of XXX marks" label
     var $outOf = $("<span class='gb-out-of'></span>");
-    $outOf.html("/"+self.getGradeItemTotalPoints());
+    $outOf.html(self.getOutOfLabel());
     self.$input.after($outOf);
+
+    // ensure row is highlighted if triggered from click
+    self.gradebookSpreadsheet.highlightRow(self.getRow());
   }
 
   function completeEditing(event) {
@@ -1659,8 +1736,8 @@ GradebookEditableCell.prototype.getHeaderCell = function() {
 };
 
 
-GradebookEditableCell.prototype.getGradeItemTotalPoints = function() {
-  return this.header.$cell.find(".gb-total-points").html();
+GradebookEditableCell.prototype.getOutOfLabel = function() {
+  return this.header.$cell.find(".gb-total-points").data("outof-label");
 };
 
 
@@ -1673,7 +1750,7 @@ GradebookEditableCell.prototype.enterEditMode = function(keyCode) {
     // only buffer 0-9 key strokes
     if (keyCode >= 48 && keyCode <= 57) {
       initialValue = keyCode - 48;
-    } else if(keyCode >= 96 && e.keyCode <= 105) {
+    } else if (keyCode >= 96 && keyCode <= 105) {
       initialValue = keyCode - 96;
     }
   }
@@ -1729,11 +1806,6 @@ function GradebookBasicCell($cell, header, gradebookSpreadsheet) {
 GradebookBasicCell.prototype = Object.create(GradebookAbstractCell);
 
 
-GradebookBasicCell.prototype.getRow = function() {
-  return this.$cell.closest("tr");
-};
-
-
 GradebookBasicCell.prototype.isEditable = function() {
   return false;
 };
@@ -1747,9 +1819,6 @@ function GradebookHeaderCell($cell, gradebookSpreadsheet) {
 
   this.setupCell($cell);
 
-  // TODO set this in wicket
-  this.$cell.attr("tabindex", 0);
-
   this.setColumnKey();
   this.truncateTitle();
   this.setupTooltip();
@@ -1757,11 +1826,6 @@ function GradebookHeaderCell($cell, gradebookSpreadsheet) {
 
 
 GradebookHeaderCell.prototype = Object.create(GradebookAbstractCell);
-
-
-GradebookHeaderCell.prototype.getRow = function() {
-  return this.$cell.closest("tr");
-};
 
 
 GradebookHeaderCell.prototype.isEditable = function() {
@@ -1873,18 +1937,19 @@ GradebookHeaderCell.prototype.moveColumnTo = function(newIndex) {
     $(self.getRow().children().get(newIndex)).after(self.$cell);
 
     // reorder the tbody cells
-    self.gradebookSpreadsheet.$table.find("tbody tr").each(function() {
+    self.gradebookSpreadsheet.$table.find("tbody > tr").each(function() {
         var $tr = $(this);
-        $tr.find("td:eq(" + newIndex + ")").after($tr.find("td:eq("+currentIndex+")"));
+        // match either th or td (as row contains either
+        $tr.find(" > *:eq(" + newIndex + ")").after($tr.find("> *:eq("+currentIndex+")"));
     });    
   } else {
     // reorder the header cell
     $(self.getRow().children().get(newIndex)).before(self.$cell);
 
     // reorder the tbody cells
-    self.gradebookSpreadsheet.$table.find("tbody tr").each(function() {
+    self.gradebookSpreadsheet.$table.find("> tbody > tr").each(function() {
         var $tr = $(this);
-        $tr.find("td:eq(" + newIndex + ")").before($tr.find("td:eq("+currentIndex+")"));
+        $tr.find("> *:eq(" + newIndex + ")").before($tr.find("> *:eq("+currentIndex+")"));
     });
   }
 };
@@ -1972,15 +2037,15 @@ GradebookToolbar.prototype.setupToggleGradeItems = function() {
   self.$gradeItemsFilterPanel = $("<div>").addClass("gb-toggle-grade-items-panel").hide();
   self.$toolbar.find("#toggleGradeItemsToolbarItem").after(self.$gradeItemsFilterPanel);
 
+  var $button = self.$toolbar.find("#toggleGradeItemsToolbarItem");
+
   // move the Wicket generated panel into this menu dropdown
   self.$gradeItemsFilterPanel.append($("#gradeItemsTogglePanel").show());
 
 
   function repositionPanel() {
-    var $toggle = self.$toolbar.find("#toggleGradeItemsToolbarItem");
-    self.$gradeItemsFilterPanel.css("right", self.gradebookSpreadsheet.getWidth() - ($toggle.position().left + $toggle.outerWidth()));
+    self.$gradeItemsFilterPanel.css("right", self.gradebookSpreadsheet.getWidth() - ($button.position().left + $button.outerWidth()));
   };
-
 
   var updateSignal = function($label, $input) {
     var $categoryGroup = $label.closest(".gradebook-item-filter-group");
@@ -2151,10 +2216,8 @@ GradebookToolbar.prototype.setupToggleGradeItems = function() {
   };
 
 
-  self.$toolbar.on("click", "#toggleGradeItemsToolbarItem", function(event) {
+  $button.on("click", function(event) {
     event.preventDefault();
-
-    var $button = $(this);
 
     $button.toggleClass("on");
 
@@ -2181,50 +2244,106 @@ GradebookToolbar.prototype.setupToggleGradeItems = function() {
     return false;
   });
 
+  $button.on("keydown", function(event) {
+    // up arrow hides menu
+    if (event.keyCode == 38) {
+      if (self.$gradeItemsFilterPanel.is(":visible")) {
+        $(this).trigger("click");
+        return false;
+      }
+    // down arrow shows menu or focuses first item in menu
+    } else if (event.keyCode == 40) {
+      if (self.$gradeItemsFilterPanel.is(":not(:visible)")) {
+        $(this).trigger("click");
+      } else {
+        self.$gradeItemsFilterPanel.find("a:first").focus();
+      }
+      return false;
+    }
+  });
 
   self.$gradeItemsFilterPanel.
         on("click", "#showAllGradeItems", function() {
           handleShowAll();
+          $(this).focus();
         }).
         on("click", "#hideAllGradeItems", function() {
           handleHideAll();
+          $(this).focus();
         }).
         on("click", ".gb-show-only-this-category", function(event) {
           event.preventDefault();
 
           var $filter = $(event.target).closest(".gradebook-item-category-filter");
           handleShowOnlyThisCategory($filter);
+          $(this).focus();
         }).
         on("click", ".gb-show-only-this-item", function(event) {
           event.preventDefault();
 
           var $filter = $(event.target).closest(".gradebook-item-filter");
           handleShowOnlyThisItem($filter);
+          $(this).focus();
         }).
         on("click", ".gb-show-only-this-category-score", function(event) {
           event.preventDefault();
 
           var $filter = $(event.target).closest(".gradebook-item-category-score-filter");
           handleShowOnlyThisCategoryScore($filter);
+          $(this).focus();
         }).
         on("click", ".gb-toggle-this-category", function(event) {
           event.preventDefault();
 
           var $filter = $(event.target).closest(".gradebook-item-category-filter");
           $filter.find(":input").trigger("click");
+          $(this).focus();
         }).
         on("click", ".gb-toggle-this-item", function(event) {
           event.preventDefault();
 
           var $filter = $(event.target).closest(".gradebook-item-filter");
           $filter.find(":input").trigger("click");
+          $(this).focus();
         }).
         on("click", ".gb-toggle-this-category-score", function(event) {
           event.preventDefault();
 
           var $filter = $(event.target).closest(".gradebook-item-category-score-filter");
           $filter.find(":input").trigger("click");
+          $(this).focus();
         });
+
+  // any labels or action links will be included in the arrow navigation
+  // we won't include dropdown toggles for this.. can get to those with tab keys
+  var $menuItems = self.$gradeItemsFilterPanel.find("#hideAllGradeItems, #showAllGradeItems, label[role='menuitem']");
+  $menuItems.on("keydown", function(event) {
+    var $this = $(this);
+    var currentIndex = $menuItems.index($this);
+
+    // up arrow navigates up or back to button
+    if (event.keyCode == 38) {
+      if (currentIndex == 0) {
+        $button.focus();
+      } else {
+        $menuItems[currentIndex-1].focus();
+      }
+      return false;
+    // down arrow navigates down list
+    } else if (event.keyCode == 40) {
+      if (currentIndex + 1 < $menuItems.length) {
+        $menuItems[currentIndex+1].focus();
+        return false;
+      }
+
+    // if return then treat as click
+    } else if (event.keyCode == 13) {
+      $this.trigger("click");
+      return false;
+    }
+
+    return true;
+  });
 
   self.$gradeItemsFilterPanel.find(".gradebook-item-category-filter :input").on("change", handleCategoryFilterStateChange);
   self.$gradeItemsFilterPanel.find(".gradebook-item-filter :input").on("change", handleGradeItemFilterStateChange);
@@ -2354,7 +2473,9 @@ GradebookWicketEventProxy = {
 /**************************************************************************************
  * Let's initialize our GradebookSpreadsheet 
  */
+var start;
 $(function() {
+  start = Date.now();
   sakai.gradebookng = {
     spreadsheet: new GradebookSpreadsheet($("#gradebookGrades"))
   };

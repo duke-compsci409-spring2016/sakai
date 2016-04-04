@@ -45,10 +45,11 @@ import org.sakaiproject.content.api.ContentHostingService;
 import org.sakaiproject.content.api.ContentResource;
 import org.sakaiproject.content.api.ContentResourceEdit;
 import org.sakaiproject.content.util.ZipContentUtil;
+import org.sakaiproject.contentreview.dao.ContentReviewConstants;
+import org.sakaiproject.contentreview.dao.ContentReviewItem;
 import org.sakaiproject.contentreview.exception.QueueException;
 import org.sakaiproject.contentreview.exception.ReportException;
 import org.sakaiproject.contentreview.exception.SubmissionException;
-import org.sakaiproject.contentreview.model.ContentReviewItem;
 import org.sakaiproject.contentreview.service.ContentReviewService;
 import org.sakaiproject.email.cover.DigestService;
 import org.sakaiproject.email.cover.EmailService;
@@ -2997,7 +2998,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		//Get the actual person that submitted, for a group submission just get the first person from that group (This is why the array is used)
 		String userId = null;
 		if (s.getSubmitterIds() != null && s.getSubmitterIds().size() > 0) {
-		    userId = (String) s.getSubmitterIds().get(0);
+		    userId = s.getSubmitterIds().get(0);
 		}
 
 		String linkToToolInSite = "<a href=\"" + developerHelperService.getToolViewURL( "sakai.assignment.grades", null, null, null ) + "\">" + siteTitle + "</a>";
@@ -3533,14 +3534,11 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 			AssignmentSubmission sub = (AssignmentSubmission) submissions.get(z);
 			if (sub != null)
 			{
-				List submitters = sub.getSubmitterIds();
-				for (int a = 0; a < submitters.size(); a++)
+				for (String userId : sub.getSubmitterIds())
 				{
-					String aUserId = (String) submitters.get(a);
-					
-						M_log.debug(this + " getSubmission(List, User) comparing aUser id : " + aUserId + " and chosen user id : "
+						M_log.debug(this + " getSubmission(List, User) comparing aUser id : " + userId + " and chosen user id : "
 								+ person.getId());
-					if (aUserId.equals(person.getId()))
+					if (userId.equals(person.getId()))
 					{
 						
 							M_log.debug(this + " getSubmission(List, User) found a match : return value is " + sub.getId());
@@ -3621,7 +3619,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		String assignmentRef = assignmentReference(submission.getContext(), submission.getAssignmentId());
 		if (!allowGradeSubmission(assignmentRef))
 		{
-			List submitterIds = submission.getSubmitterIds();
+			List<String> submitterIds = submission.getSubmitterIds();
 			String userId = SessionManager.getCurrentSessionUserId();
 			if (!userId.equals(submission.getSubmitterId()) && submitterIds != null && !submitterIds.contains(userId))
 			{
@@ -10195,7 +10193,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 
 		protected String m_context;
 
-		protected List m_submitters;
+		protected List<String> m_submitters;
 
                 protected String m_submitterId;
 
@@ -10332,7 +10330,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 					M_log.debug(this + " getReviewScore checking for score for content: " + contentId);
 
                     Long status = contentReviewService.getReviewStatus(contentId);
-                    if (status != null && (status.equals(ContentReviewItem.NOT_SUBMITTED_CODE) || status.equals(ContentReviewItem.SUBMITTED_AWAITING_REPORT_CODE)))  {
+                    if (status != null && (status.equals(ContentReviewConstants.CONTENT_REVIEW_NOT_SUBMITTED_CODE) || status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMITTED_AWAITING_REPORT_CODE)))  {
                         M_log.debug(this + " getReviewStatus returned a status of: " + status);
                         return -2;
                     }
@@ -10401,7 +10399,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 				M_log.debug(this + " getReviewScore(ContentResource) checking for score for content: " + contentId);
 
 				Long status = contentReviewService.getReviewStatus(contentId);
-				if (status != null && (status.equals(ContentReviewItem.NOT_SUBMITTED_CODE) || status.equals(ContentReviewItem.SUBMITTED_AWAITING_REPORT_CODE)))
+				if (status != null && (status.equals(ContentReviewConstants.CONTENT_REVIEW_NOT_SUBMITTED_CODE) || status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMITTED_AWAITING_REPORT_CODE)))
 				{
 					M_log.debug(this + " getReviewStatus returned a state of: " + status);
 					return -2;
@@ -10590,20 +10588,20 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
                     String errorMessage = null; 
                     
                     if (status != null) {
-                        if (status.equals(ContentReviewItem.REPORT_ERROR_NO_RETRY_CODE)) {
+                        if (status.equals(ContentReviewConstants.CONTENT_REVIEW_REPORT_ERROR_NO_RETRY_CODE)) {
                             errorMessage = rb.getString("content_review.error.REPORT_ERROR_NO_RETRY_CODE");
-                        } else if (status.equals(ContentReviewItem.REPORT_ERROR_RETRY_CODE)) {
+                        } else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_REPORT_ERROR_RETRY_CODE)) {
                             errorMessage = rb.getString("content_review.error.REPORT_ERROR_RETRY_CODE");
-                        } else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_NO_RETRY_CODE)) {
+                        } else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_NO_RETRY_CODE)) {
                             errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_NO_RETRY_CODE");
-                        } else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_RETRY_CODE)) {
+                        } else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_RETRY_CODE)) {
                             errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_RETRY_CODE");
-                        } else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_RETRY_EXCEEDED)) {
+                        } else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_RETRY_EXCEEDED_CODE)) {
                             errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_RETRY_EXCEEDED_CODE");
-                        } else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_USER_DETAILS_CODE)) {
+                        } else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_USER_DETAILS_CODE)) {
                             errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_USER_DETAILS_CODE");
-                        } else if (ContentReviewItem.SUBMITTED_AWAITING_REPORT_CODE.equals(status)
-                                || ContentReviewItem.NOT_SUBMITTED_CODE.equals(status)) {
+                        } else if (ContentReviewConstants.CONTENT_REVIEW_SUBMITTED_AWAITING_REPORT_CODE.equals(status)
+                                || ContentReviewConstants.CONTENT_REVIEW_NOT_SUBMITTED_CODE.equals(status)) {
                         	errorMessage = rb.getString("content_review.pending.info");
                         }
                     }
@@ -10643,31 +10641,31 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 				// TODO: we can remove this null check if we use yoda statements below
 				if (status != null)
 				{
-					if (status.equals(ContentReviewItem.REPORT_ERROR_NO_RETRY_CODE))
+					if (status.equals(ContentReviewConstants.CONTENT_REVIEW_REPORT_ERROR_NO_RETRY_CODE))
 					{
 						errorMessage = rb.getString("content_review.error.REPORT_ERROR_NO_RETRY_CODE");
 					}
-					else if (status.equals(ContentReviewItem.REPORT_ERROR_RETRY_CODE))
+					else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_REPORT_ERROR_RETRY_CODE))
 					{
 						errorMessage = rb.getString("content_review.error.REPORT_ERROR_RETRY_CODE");
 					}
-					else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_NO_RETRY_CODE))
+					else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_NO_RETRY_CODE))
 					{
 						errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_NO_RETRY_CODE");
 					}
-					else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_RETRY_CODE))
+					else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_RETRY_CODE))
 					{
 						errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_RETRY_CODE");
 					}
-					else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_RETRY_EXCEEDED))
+					else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_RETRY_EXCEEDED_CODE))
 					{
 						errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_RETRY_EXCEEDED_CODE");
 					}
-					else if (status.equals(ContentReviewItem.SUBMISSION_ERROR_USER_DETAILS_CODE))
+					else if (status.equals(ContentReviewConstants.CONTENT_REVIEW_SUBMISSION_ERROR_USER_DETAILS_CODE))
 					{
 						errorMessage = rb.getString("content_review.error.SUBMISSION_ERROR_USER_DETAILS_CODE");
 					}
-					else if (ContentReviewItem.SUBMITTED_AWAITING_REPORT_CODE.equals(status) || ContentReviewItem.NOT_SUBMITTED_CODE.equals(status))
+					else if (ContentReviewConstants.CONTENT_REVIEW_SUBMITTED_AWAITING_REPORT_CODE.equals(status) || ContentReviewConstants.CONTENT_REVIEW_NOT_SUBMITTED_CODE.equals(status))
 					{
 						errorMessage = rb.getString("content_review.pending.info");
 					}
@@ -10764,7 +10762,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 			m_assignment = assignId;
 			m_properties = new BaseResourcePropertiesEdit();
 			addLiveProperties(m_properties);
-			m_submitters = new ArrayList();
+			m_submitters = new ArrayList<String>();
 			m_submissionLog = new ArrayList();
 			m_grades = new ArrayList();
                         m_feedbackAttachments = m_entityManager.newReferenceList();
@@ -10882,7 +10880,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 
 			m_submissionLog = new ArrayList();
 			m_grades = new ArrayList();
-			m_submitters = new ArrayList();
+			m_submitters = new ArrayList<String>();
 			m_submittedAttachments = m_entityManager.newReferenceList();
 			m_feedbackAttachments = m_entityManager.newReferenceList();
 
@@ -11408,7 +11406,63 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		        while (_it.hasNext()) {
 		            String _s = _it.next();
 		            if (_s.startsWith(id + "::")) {
-		                return _s.endsWith("null") ? null: _s.substring(_s.indexOf("::") + 2);
+		                //return _s.endsWith("null") ? null: _s.substring(_s.indexOf("::") + 2);
+		            	if(_s.endsWith("null"))
+		            	{
+		            		return null;
+		            	}
+		            	else
+		            	{
+		            		String grade=_s.substring(_s.indexOf("::") + 2);
+		            		if (grade != null && grade.length() > 0 && !"0".equals(grade))
+		    				{
+		    					int factor = getAssignment().getContent().getFactor();
+		    					int dec = (int)Math.log10(factor);
+		    					String decSeparator = FormattedText.getDecimalSeparator();
+		    					String decimalGradePoint = "";
+		    					try
+		    					{
+		    						Integer.parseInt(grade);
+		    						// if point grade, display the grade with factor decimal place
+		    						int length = grade.length();
+		    						if (length > dec) {
+		    							decimalGradePoint = grade.substring(0, grade.length() - dec) + decSeparator + grade.substring(grade.length() - dec);
+		    						}
+		    						else {
+		    							String newGrade = "0".concat(decSeparator);
+		    							for (int i = length; i < dec; i++) {
+		    								newGrade = newGrade.concat("0");
+		    							}
+		    							decimalGradePoint = newGrade.concat(grade);
+		    						}
+		    					}
+		    					catch (NumberFormatException e) {
+		    						try {
+		    							Float.parseFloat(grade);
+		    							decimalGradePoint = grade;
+		    						}
+		    						catch (Exception e1) {
+		    							return grade;
+		    						}
+		    					}
+		    					// get localized number format
+		    					NumberFormat nbFormat = FormattedText.getNumberFormat(dec,dec,false);
+		    					DecimalFormat dcformat = (DecimalFormat) nbFormat;
+		    					// show grade in localized number format
+		    					try {
+		    						Double dblGrade = dcformat.parse(decimalGradePoint).doubleValue();
+		    						decimalGradePoint = nbFormat.format(dblGrade);
+		    					}
+		    					catch (Exception e) {
+		    						return grade;
+		    					}
+		    					return decimalGradePoint;
+		    				}
+		    				else
+		    				{
+		    					return StringUtils.trimToEmpty(grade);
+		    				}
+		            	}
 		            }
 		        }
 		    }
@@ -11421,7 +11475,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		 */
 		public User[] getSubmitters() {
 			List<User> retVal = new ArrayList();
-			for (String userId:(List<String>) getSubmitterIds()) {
+			for (String userId : getSubmitterIds()) {
 				try {
 					retVal.add(UserDirectoryService.getUser(userId));
 				} catch (Exception e) {
@@ -11447,7 +11501,7 @@ public abstract class BaseAssignmentService implements AssignmentService, Entity
 		 * 
 		 * @return FlexStringArray of user ids.
 		 */
-		public List getSubmitterIds()
+		public List<String> getSubmitterIds()
 		{
 		    Assignment a = getAssignment();
 		    if (a.isGroup()) {

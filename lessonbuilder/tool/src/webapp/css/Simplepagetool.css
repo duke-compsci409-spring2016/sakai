@@ -265,6 +265,7 @@ a.edit-link:link, a.edit-link:visited, a.section-merge-link:link, a.section-merg
 
 .newItem {
    border-left: 5px solid black !important;
+   margin-left: -5px;
 }
 
 .mainList {
@@ -367,6 +368,10 @@ a.edit-link:link, a.edit-link:visited, a.section-merge-link:link, a.section-merg
     -moz-column-count: 2;
     column-count: 2;
 }
+.split .edit-col {
+    right:0px;
+}
+
 
 .coltrans {
    border-color: transparent;
@@ -769,8 +774,8 @@ a.peer-eval-stats {
 #toolbar {
   padding:2px;
   margin:0px;
-  margin-top:6px;
   margin-bottom:-10px;
+  display:inline-block !important;
 }
 
 /* Dropdown Menu */
@@ -937,11 +942,20 @@ img {
  font-size:85%;
 }
 input[type="submit"].question-submit,.addStudentContent {
+   margin: inherit;
    margin-top:15px;
-   border-color:#aaa;
+   border:1px solid #999;
+   color: black !important;
+   font-family: inherit;
+   cursor: pointer;
    padding:6px 20px !important;
-   background:none;
+   background:#f0f0f0;
    font-weight: normal;
+   font-size: inherit;
+   letter-spacing: inherit;   
+   line-height: inherit;
+   border-radius: 3px;
+   position: static;
 }
 
 .questionDiv .contentCol {
@@ -1030,12 +1044,16 @@ div[role="dialog"] {
     width: 100%;
     height: 100%;
 }
-.Mrphs-siteHierarchy .action {
-    display: inline-block;
-    vertical-align: middle;
-    float:right;
-    top: 50%;
+.action {
+  display:inline-block;
+  float:right !important;
+}
+.action {
+  margin-top:5px;
 }			      
+.Mrphs-toolTitleNav .Mrphs-toolTitleNav__button_container {
+  top:-10px !important;
+}
 .Mrphs-siteHierarchy {
     height: auto !important;
 }
@@ -1120,11 +1138,11 @@ div[role="dialog"] {
     background: url(../images/reload_h.gif) center left no-repeat
 }
 
-/*
- alternate treatment for list - can go in tool.css
-*/
 .right-col {
  display: inline-block;
+}
+.multimediaType .right-col {
+ width:100%;  /* for embedded video */
 }
 .right-col2 {
  left:5px;
@@ -1132,14 +1150,8 @@ div[role="dialog"] {
 .right-col3 {
  left:10px;
 }
-
-.Mrphs-container--toolTitleNav {
-  text-align:right;
-}
 .returnwarning, .returnheader, .xMrphs-toolTitleNav__addLeft .usebutton span {
   font-size: .75em;
-}
-#content, #outer, nav.Mrphs-toolTitleNav {
 }
 #content{
   padding-top: 1px;
@@ -1147,6 +1159,7 @@ div[role="dialog"] {
 }
 div.navIntraTool {
   border-top:none;
+  margin-bottom:
 }
 
 /* temporary, to avoid changing old stuff for the moment */
@@ -1269,7 +1282,16 @@ font-size: 90%;
 .Mrphs-container--toolTitleNav {
   margin-bottom: 0px !important;
 }
-
+.genTitle {
+  display:none;
+}
+/* student mode only */
+.genTitle ~ .action {
+  margin-top:-5px;
+}
+.itemclass {
+  margin-top: 0.5em !important;
+}
 .removeNarrow {
  display:none !important;
 }
@@ -1356,9 +1378,6 @@ font-size: 90%;
 .Mrphs-siteHierarchy span:last-child {
   margin-left: 6px;
 }
-.Mrphs-container--toolTitleNav {
-  float:right;
-}
 .contentButton span a {
   height: 24px;
 }
@@ -1381,4 +1400,139 @@ font-size: 90%;
 }
 .itemTitle {
   margin-top:10px
+}
+.startupHelp {
+  margin-top: 20px;
+}
+/* this section is to make things work when lessons is in an iframe */
+.contentButton span a {
+  display:inline-block !important;
+  border:1px solid #e0e0e0;
+}
+body > .portletBody {
+  margin-top:-15px;
+  padding-top:0px;
+  padding-bottom:0px;
+}
+.oldPortal + .navIntroTool {
+}
+.oldPortal .title {
+
+}
+.oldPortal + .navIntraTool {
+  padding-top:0px;
+}
+.title-tools {
+  line-height:30px;
+}
+.oldPortal + .navIntraTool {
+  border: none;
+}
+.oldPortal + .navIntraTool #toolbar{
+ margin-top:5px;
+ margin-bottom:0px;
+}
+/* old portal, but only for students. instructors need more spacing */
+.oldPortal ~ .itemclass {
+  margin-top: 0.0em !important;
+}
+/* put back default value if an instructor */
+.navIntraTool ~ div.itemclass {
+  margin-top: 3.0em !important;
+}
+.title-tools {
+  float:none;
+  position:static;
+  margin-bottom:0px !important;
+}
+.oldPortal .title {
+  display: inline-block;
+  float:none !important;
+  text-align: left;
+}
+.oldPortal .action {
+     margin-top:0px;
+ }
+@media only screen and (min-width: 855px) {
+/* student mode only */
+body > .portletBody > .action {
+  margin-right:150px;
+}
+.oldPortal .action {
+     margin-top:20px;
+   }
+}
+.oldPortal + .navIntraTool {
+   margin-top: -10px;
+}
+/* end lessons in iframe */
+/* narrow screen */
+
+/* print */
+@media print {
+
+.oldPortal .portletTitle {
+  padding-top: 30px !important
+}
+
+.cols9 {
+    width: calc(100$ / 9  - 32px) !important;
+}
+[class~="cols9"][class~="double"] {
+    width: calc(200% / 9 - 32px) !important;
+}
+.cols8 {
+    width: calc(100% / 8 - 32px) !important;
+}
+[class~="cols8"][class~="double"] {
+    width: calc(200% / 8 - 32px) !important;
+}
+.cols7 {
+    width: calc(100% / 7 - 32px) !important;
+}
+[class~="cols7"][class~="double"] {
+    width: calc(200% / 7 - 32px) !important;
+}
+.cols6 {
+    width: calc(100% / 6 - 32px) !important;
+}
+[class~="cols6"][class~="double"] {
+    width: calc(200% / 6 - 32px) !important;
+}
+.cols5 {
+    width: calc(100% / 5 - 32px) !important;
+}
+[class~="cols5"][class~="double"] {
+    width: calc(200% / 5 - 32px) !important;
+}
+.cols4 {
+    width: calc(100% / 4 - 32px) !important;
+}
+[class~="cols4"][class~="double"] {
+    width: calc(200% / 4 - 32px) !important;
+}
+.cols3 {
+    width: calc(100% / 3 - 32px) !important;
+}
+[class~="cols3"][class~="double"] {
+    width: calc(200% / 3 - 32px) !important;
+}
+.cols2 {
+    width: calc(100% / 2 - 32px) !important;
+}
+[class~="cols2"][class~="double"] {
+    width: calc(200% / 2 - 32px) !important;
+}
+.cols1 {
+    width: calc(100% - 32px) !important;
+}
+}
+/* end media print */
+
+/* high z-index for items in morpheus. We use large z-index to make sure we go on top
+   of any video players or other embedded content. That requires larger values for some
+   elements of Morpheus. */
+
+#Mrphs-footerApp__chat, .Mrphs-userNav__subnav {
+        z-index: 100002 !important;
 }

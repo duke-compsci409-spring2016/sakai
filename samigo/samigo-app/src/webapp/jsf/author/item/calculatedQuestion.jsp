@@ -113,6 +113,17 @@ confirmation dialog
 		<br/>
 	</div>
 
+	<div class="longtext">
+		<h:outputLabel value="#{authorMessages.answer_point_value_display}" />    </div>
+	<div class="tier3">
+		<h:selectOneRadio value="#{itemauthor.currentItem.itemScoreDisplayFlag}" >
+		<f:selectItem itemValue="true"
+				itemLabel="#{authorMessages.yes}" />
+		<f:selectItem itemValue="false"
+				itemLabel="#{authorMessages.no}" />
+		</h:selectOneRadio>
+	</div>
+
     <%-- 2 QUESTION TEXT --%>
     <div class="longtext"> <h:outputLabel value="#{authorMessages.q_text}" />
     <br/></div>
@@ -397,7 +408,7 @@ confirmation dialog
 		<h:outputText value="#{authorMessages.correct_answer_opti}" />
 	  	<f:verbatim><br/></f:verbatim>
 	  	<samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.corrFeedback}" hasToggle="yes" mode="author">
-	    	<f:validateLength maximum="4000"/>
+	    	<f:validateLength maximum="60000"/>
 	   	</samigo:wysiwyg>
 	</h:panelGrid>	
 	<br/>	
@@ -405,7 +416,7 @@ confirmation dialog
 		<h:outputText value="#{authorMessages.incorrect_answer_op}"/>
 	  	<f:verbatim><br/></f:verbatim>
 	   	<samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.incorrFeedback}" hasToggle="yes" mode="author">
-	    	<f:validateLength maximum="4000"/>
+	    	<f:validateLength maximum="60000"/>
 	   	</samigo:wysiwyg>
 	 </h:panelGrid>	
 	</div>

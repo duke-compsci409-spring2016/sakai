@@ -62,10 +62,10 @@ public class PublishedAccessControl
   private Integer autoSubmit;  // auto submit when due date arrives
   private Integer itemNavigation; // linear (1)or random (0)
   private Integer itemNumbering;  // continuous between parts(1), restart between parts(0)
+  private Integer displayScoreDuringAssessments;
   private String submissionMessage;
   private String finalPageUrl;
   private String releaseTo;
-  private String username;
   private String password;
   private Boolean unlimitedSubmissions;
   private Integer markForReview;
@@ -136,8 +136,8 @@ public class PublishedAccessControl
     ((PublishedAccessControl)cloned).setAutoSubmit(this.autoSubmit);
     ((PublishedAccessControl)cloned).setItemNavigation(this.itemNavigation);
     ((PublishedAccessControl)cloned).setItemNumbering(this.itemNumbering);
+    ((PublishedAccessControl)cloned).setDisplayScoreDuringAssessments(this.displayScoreDuringAssessments);
     ((PublishedAccessControl)cloned).setSubmissionMessage(this.submissionMessage);
-    ((PublishedAccessControl)cloned).setUsername(this.username);
     ((PublishedAccessControl)cloned).setPassword(this.password);
     ((PublishedAccessControl)cloned).setFinalPageUrl(this.finalPageUrl);
     ((PublishedAccessControl)cloned).setUnlimitedSubmissions(this.unlimitedSubmissions);
@@ -323,6 +323,16 @@ public class PublishedAccessControl
   {
     return itemNumbering;
   }
+  
+  public void setDisplayScoreDuringAssessments(Integer displayScore)
+  {
+    this.displayScoreDuringAssessments = displayScore;
+  }
+
+  public Integer getDisplayScoreDuringAssessments()
+  {
+    return displayScoreDuringAssessments;
+  }
 
   public void setSubmissionMessage(String submissionMessage)
   {
@@ -349,13 +359,7 @@ public class PublishedAccessControl
   public void setReleaseTo(String releaseTo) {
     this.releaseTo = releaseTo;
   }
-  public String getUsername() {
-    return this.username;
-  }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
   public String getPassword() {
     return this.password;
   }

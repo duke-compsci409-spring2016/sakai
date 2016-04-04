@@ -21,17 +21,22 @@ This only will be turned on if the provider is enabled and there are tools to pr
     basiclti.provider.enabled=true
 
     basiclti.provider.allowedtools=sakai.announcements:sakai.singleuser:
-    sakai.assignment.grades:blogger:sakai.dropbox:sakai.mailbox:sakai.forums:
+    sakai.assignment.grades:sakai.dropbox:sakai.forums:
     sakai.gradebook.tool:sakai.podcasts:sakai.poll:sakai.resources:
     sakai.schedule:sakai.samigo:sakai.rwiki
 
-    casa.provider=true
+    casa.provider.enabled=true
 
-The casa.provider value defaults to the same as basiclti.provider.enabled.  If
+The casa.provider.enabled value defaults to the same as basiclti.provider.enabled.  If
 you turn on basiclti.provider.enabled and want to turn off CASA simply use:
 
-    casa.provider=false
+    casa.provider.enabled=false
 
+The contact information in the CASA JSON file is taken from the LTI2 configuration variables:
+
+* [Configuring LTI 2.0](LTI2.md)
+
+So it is a good thing to populate these variables in your server.
 
 JIRA References
 ---------------

@@ -1,11 +1,7 @@
-/* Compass requirements */
-@import "compass/reset";
-@import "compass/css3";
-
-
 /* Global namespace */
 
 $namespace : "Mrphs-";
+$skin-name : "morpheus-default"; // This is used for bootstrap font behaviour.
 
 $break-small-end: 	800px;
 $break-medium-end: 	1030px;
@@ -35,7 +31,7 @@ $header-font-weight: 700 !default;										// 300, 400 or 700 as you wish
 $background-color: 			 #FFFFFF !default;
 $background-color-secondary: #444444 !default;
 
-$tool-background-color:		 #FFFFFF !default;
+$tool-background-color:		 $background-color !default;
 $toolMenuBGColor:			 #EBEBEB !default;
 $toolMenuColor: 			 #424242 !default;
 $toolTabBGColor: 			 #F8F8F8 !default;
@@ -43,6 +39,7 @@ $toolBorderColor:			 #E0E0E0 !default;
 
 $primary-color:    			 #2a94c0 !default;
 $secondary-color:  			 #F00 !default;
+$alt-colour: 				 #d36f00 !default;
 
 $text-color:				 #212121 !default;
 
@@ -54,7 +51,7 @@ $button-background-secondary-color: #FFF !default;
 /* General button colors */
 $button-color-text-color: #FFF !default;
 $button-color-border-color: #4a8db3 !default;
-$button-color-background-color: #2a94c0 !default;
+$button-color-background-color: $primary-color !default;
 $button-color-background-secondary-color: #276488 !default;
 /* ///////////// */
 
@@ -65,6 +62,11 @@ $warncolor: 			 	 #fcf8e3 !default;
 $swapped-view-primary: 		 #bf360c !default;
 $swapped-view-text-color:	 #414141 !default;
 
+/* This is the gradient in the header of the page */
+$header-gradient-a: #b6c3d4 !default;
+$header-gradient-b: #d9cdcd !default;
+$header-gradient-c: #c4ccd7 !default;
+$header-gradient-d: #a6c2df !default;
 
 /* Main Menu */
 $header-size : 3.8em !default;
@@ -80,6 +82,8 @@ $measure: 960px !default;
 
 /* Logo location */
 $logo: 'images/logo.png' !default;
+$logo-height: 30px !default;
+$logo-width: 50px !default;
 
 /* Tool icons */
 $skin-with-icons: true !default;
@@ -87,6 +91,4 @@ $icon-size: 20px !default;
 
 @import "customization"; //it is created on-the-fly by maven.
 
-@import url( #{$font-family-url}    );
-
-// @import url( #{$header-font-family-url} );
+@import url(#{$font-family-url});

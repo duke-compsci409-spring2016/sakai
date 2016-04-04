@@ -83,6 +83,16 @@
   </h:inputText>
  <br/>  <h:message for="answerptr" styleClass="validate"/>
  </div>
+ <div class="longtext">
+    <h:outputLabel value="#{authorMessages.answer_point_value_display}" />    </div>
+	<div class="tier3">
+    <h:selectOneRadio value="#{itemauthor.currentItem.itemScoreDisplayFlag}" >
+     <f:selectItem itemValue="true"
+       itemLabel="#{authorMessages.yes}" />
+     <f:selectItem itemValue="false"
+       itemLabel="#{authorMessages.no}" />
+    </h:selectOneRadio>
+  </div>
 <br/>
   <!-- 1.2 Min POINTS -->
 <f:subview id="minPoints" rendered="#{itemauthor.allowMinScore}">
@@ -185,14 +195,14 @@
   <h:panelGrid rendered="#{itemauthor.target == 'questionpool' || (itemauthor.target != 'questionpool' && (author.isEditPendingAssessmentFlow && assessmentSettings.feedbackAuthoring ne '2') || (!author.isEditPendingAssessmentFlow && publishedSettings.feedbackAuthoring ne '2'))}">
    <h:outputText value="#{authorMessages.correct_answer_opti}" />
    <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.corrFeedback}" hasToggle="yes" mode="author">
-     <f:validateLength maximum="4000"/>
+     <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
   </h:panelGrid>
 
   <h:panelGrid rendered="#{itemauthor.target == 'questionpool' || (itemauthor.target != 'questionpool' && (author.isEditPendingAssessmentFlow && assessmentSettings.feedbackAuthoring ne '2') || (!author.isEditPendingAssessmentFlow && publishedSettings.feedbackAuthoring ne '2'))}">
    <h:outputText value="#{authorMessages.incorrect_answer_op}" />
    <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.incorrFeedback}" hasToggle="yes" mode="author">
-     <f:validateLength maximum="4000"/>
+     <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
   </h:panelGrid>
   

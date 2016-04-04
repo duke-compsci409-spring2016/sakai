@@ -91,6 +91,16 @@
 		<f:validateDoubleRange /></h:inputText>
 		<h:message for="answerptr" styleClass="validate" />
    </div>
+   <div class="longtext">
+       <h:outputLabel value="#{authorMessages.answer_point_value_display}" />    </div>
+   <div class="tier3">
+       <h:selectOneRadio value="#{itemauthor.currentItem.itemScoreDisplayFlag}" >
+       <f:selectItem itemValue="true"
+                     itemLabel="#{authorMessages.yes}" />
+       <f:selectItem itemValue="false"
+                     itemLabel="#{authorMessages.no}" />
+       </h:selectOneRadio>
+   </div>
 	<br/>
 	
  <!-- 2 TEXT -->
@@ -204,7 +214,7 @@
   <!-- WYSIWYG -->
   <h:panelGrid>
    <samigo:wysiwyg rows="140" value="#{itemauthor.currentItem.generalFeedback}" hasToggle="yes" mode="author">
-     <f:validateLength maximum="4000"/>
+     <f:validateLength maximum="60000"/>
    </samigo:wysiwyg>
   </h:panelGrid>
  <f:verbatim> </div></div></f:verbatim>

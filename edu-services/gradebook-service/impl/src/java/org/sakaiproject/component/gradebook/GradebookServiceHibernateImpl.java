@@ -24,6 +24,7 @@ package org.sakaiproject.component.gradebook;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -956,6 +957,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 					double totalPointsPossible = getTotalPointsInternal(gradebook, cates, cgr.getStudentId(), studentGradeRecs, countedAssigns, false);
 					cgr.initNonpersistentFields(totalPointsPossible, totalPointsEarned, literalTotalPointsEarned);
 					if(log.isDebugEnabled()) log.debug("Points earned = " + cgr.getPointsEarned());
+					if(log.isDebugEnabled()) log.debug("Points possible = " + cgr.getTotalPointsPossible());
 				}
 
 				return records;
@@ -1932,15 +1934,16 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 				  Double gradeAsDouble = Double.parseDouble(grade);
 				  // grade must be greater than or equal to 0
 				  if (gradeAsDouble.doubleValue() >= 0) {
+						String[] splitOnDecimal = grade.split("\\.");
 					  // check that there are no more than 2 decimal places
-					  String[] splitOnDecimal = grade.split("\\.");
-					  if (splitOnDecimal == null || splitOnDecimal.length < 2) {
+					  if (splitOnDecimal == null) {
 						  gradeIsValid = true;
-					  } else if (splitOnDecimal.length == 2) {
-						  String decimal = splitOnDecimal[1];
-						  if (decimal.length() <= 2) {
-							  gradeIsValid = true;
-						  }
+
+					  // check for a valid score matching ##########.##
+					  // where integer is maximum of 10 integers in length
+					  // and maximum of 2 decimal places
+					  } else if (grade.matches("[0-9]{0,10}(\\.[0-9]{0,2})?")) {
+						  gradeIsValid = true;
 					  }
 				  }
 			  } catch (NumberFormatException nfe) {
@@ -2382,7 +2385,11 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 	  	if (assignmentScore == null)
 	  		return null;
 	  	
-	  	return Double.valueOf(assignmentScore).toString();
+	  	// avoid scientific notation on large scores by using a formatter
+	  	final DecimalFormat df = new DecimalFormat();
+	  	df.setGroupingUsed(false);
+
+	  	return df.format(assignmentScore);
   	}
   
   	@Override
@@ -3090,7 +3097,7 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 			Assignment assignment = gradeRecord.getAssignment();
 						
 			//check category ids match, otherwise skip
-			if(assignment.getCategory() != null && categoryId.longValue() != assignment.getCategory().getId().longValue()){
+			if(assignment.getCategory() != null && categoryId != null && categoryId.longValue() != assignment.getCategory().getId().longValue()){
 				continue;
 			}
 						
@@ -3124,8 +3131,13 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 	
 	@Override
 	public org.sakaiproject.service.gradebook.shared.CourseGrade getCourseGradeForStudent(String gradebookUid, String userUuid) {
+		return this.getCourseGradeForStudents(gradebookUid, Collections.singletonList(userUuid)).get(userUuid);
+	}
+	
+	@Override
+	public Map<String,org.sakaiproject.service.gradebook.shared.CourseGrade> getCourseGradeForStudents(String gradebookUid, List<String> userUuids) {
 		
-		org.sakaiproject.service.gradebook.shared.CourseGrade rval = new org.sakaiproject.service.gradebook.shared.CourseGrade();
+		Map<String,org.sakaiproject.service.gradebook.shared.CourseGrade> rval = new HashMap<>();
 
 		try {
 			Gradebook gradebook = getGradebook(gradebookUid);
@@ -3135,40 +3147,46 @@ public class GradebookServiceHibernateImpl extends BaseHibernateManager implemen
 			if(!gradebook.isCourseGradeDisplayed() && (!currentUserHasEditPerm(gradebookUid) || !currentUserHasGradingPerm(gradebookUid))){
 				return rval;
 			}
-						
+			
 			List<Assignment> assignments = getAssignmentsCounted(gradebook.getId());
-						
-			List<CourseGradeRecord> gradeRecords = getPointsEarnedCourseGradeRecords(getCourseGrade(gradebook.getId()), Collections.singletonList(userUuid));
+			GradeMapping gradeMap = gradebook.getSelectedGradeMapping();
 			
-			if(gradeRecords.size() != 1) {
-				throw new IllegalStateException("More than one course grade record found for student: " + userUuid);
-			}
+			//this takes care of drop/keep scores
+			List<CourseGradeRecord> gradeRecords = getPointsEarnedCourseGradeRecords(getCourseGrade(gradebook.getId()), userUuids);
 			
-			CourseGradeRecord gradeRecord = gradeRecords.get(0);
-						
-			//ID of the course grade item
-			rval.setId(gradeRecord.getCourseGrade().getId());
-			
-			//set entered grade
-			rval.setEnteredGrade(gradeRecord.getEnteredGrade());
-						
-			if(!assignments.isEmpty()) {
+			gradeRecords.forEach(gr -> {
 				
-				//calculated grade
-				//may be null if no grade entries to calculate
-				Double calculatedGrade = gradeRecord.getAutoCalculatedGrade();
-				if(calculatedGrade != null) {
-					rval.setCalculatedGrade(calculatedGrade.toString());
-				}
+				org.sakaiproject.service.gradebook.shared.CourseGrade cg = new org.sakaiproject.service.gradebook.shared.CourseGrade();
 
-				//mapped grade
-				GradeMapping gradeMap = gradebook.getSelectedGradeMapping();
-				String mappedGrade = gradeMap.getGrade(calculatedGrade);
-				rval.setMappedGrade(mappedGrade);
-			}
+				//ID of the course grade item
+				cg.setId(gr.getCourseGrade().getId());
+				
+				//set entered grade
+				cg.setEnteredGrade(gr.getEnteredGrade());
+				
+				if(!assignments.isEmpty()) {
+					
+					//calculated grade
+					//may be null if no grade entries to calculate
+					Double calculatedGrade = gr.getAutoCalculatedGrade();
+					if(calculatedGrade != null) {
+						cg.setCalculatedGrade(calculatedGrade.toString());
+					}
+
+					//mapped grade
+					String mappedGrade = gradeMap.getGrade(calculatedGrade);
+					cg.setMappedGrade(mappedGrade);
+					
+					//points
+					cg.setPointsEarned(gr.getPointsEarned()); //synonymous with gradeRecord.getCalculatedPointsEarned()
+					cg.setTotalPointsPossible(gr.getTotalPointsPossible());
+					
+				}
+				rval.put(gr.getStudentId(), cg);
+			});
 		}
 		catch(Exception e) {
-			log.error("Error in getCourseGradeForStudent", e);
+			log.error("Error in getCourseGradeForStudents", e);
 		}
 		return rval;
 	}
