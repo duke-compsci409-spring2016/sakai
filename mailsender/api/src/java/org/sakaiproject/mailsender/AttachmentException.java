@@ -37,7 +37,8 @@ public class AttachmentException extends Exception
 	{
 		super(cause);
 	}
-
+	
+	// Change #2
 	public AttachmentException(String message, Throwable cause)
 	{
 		super(message, cause);

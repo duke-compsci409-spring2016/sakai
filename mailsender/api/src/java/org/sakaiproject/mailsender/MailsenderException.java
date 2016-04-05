@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// Change #1
+
 /**
  * General exception for Mailsender. This exception can store messages to be sent up to the UI for
  * display to the user. This is terrible design but somewhat necessary until the updated Email API
