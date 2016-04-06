@@ -41,6 +41,7 @@ public class CalendarEventVector
 	*/
 	public CalendarEventVector()
 	{
+		// Call vector constructor
 		super();
 	}
 
@@ -50,6 +51,7 @@ public class CalendarEventVector
 	*/
 	public CalendarEventVector(Iterator events)
 	{
+		// Call vector constructor
 		super();
 
 		while (events.hasNext())
@@ -85,6 +87,3 @@ public class CalendarEventVector
 	}	// getEvents
 
 }	// CalendarEventVector
-
-
-
