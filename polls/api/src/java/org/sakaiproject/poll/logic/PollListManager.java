@@ -30,8 +30,8 @@ import org.sakaiproject.poll.model.Poll;
 
 /**
  * This is the interface for the Manager for our poll tool, 
- * it handles the data access functionality of the tool, we currently
- * have 2 implementations (memory and hibernate)
+ * it handles the data access functionality of the tool, 
+ * we currently have 2 implementations (memory and hibernate)
  * @author DH
  *
  */

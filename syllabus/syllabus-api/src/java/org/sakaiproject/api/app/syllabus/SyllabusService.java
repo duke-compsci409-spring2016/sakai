@@ -28,7 +28,7 @@ import java.util.List;
 
 public interface SyllabusService extends EntityProducer
 {
-  /** This string can be used to find the service in the service manager. */
+  /** This string can be used to find the service in the service manager. Squash two*/
 	public static final String APPLICATION_ID = "sakai:syllabus";
 	
 	public static final String EVENT_SYLLABUS_POST_NEW = "syllabus.post.new";

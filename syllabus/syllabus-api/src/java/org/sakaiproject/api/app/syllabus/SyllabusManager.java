@@ -27,7 +27,7 @@ import java.util.Set;
 public interface SyllabusManager
 {
   /**
-   * creates an SyllabusItem
+   * creates an SyllabusItem testing squash
    */
   public SyllabusItem createSyllabusItem(String userId, String contextId,
       String redirectURL);

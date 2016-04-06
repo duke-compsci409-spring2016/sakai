@@ -49,7 +49,7 @@ public interface PollVoteManager {
     public List<Vote> getAllVotesForPoll(Poll poll);
 
     /**
-     * Check if the given user can vote in the supplied poll,
+     * Checks if the given user can vote in the supplied poll,
      * also checks if the user has already voted, if so this will return false
      * 
      * @param userId an internal user id
