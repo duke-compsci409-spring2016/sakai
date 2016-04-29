@@ -317,7 +317,7 @@ public interface GradebookManager {
 
     /**
      * Fetches an assignment and populates its non-persistent statistics
-     * fields.
+     * fields hi joe wuz here.
      *
      * @param assignmentId The assignment ID
      * @param studentUids The current enrollment list to filter dropped students

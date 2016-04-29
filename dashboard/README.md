@@ -1,7 +1,7 @@
 # Dashboard 
 
 The Sakai Dashboard tool will display current and upcoming activity from the Announcements, Assignments, Calendar and Resources tools. Additional tools may be added later.
-
+hi`
 Additional information on changing the Dashboard default configuration is available at <https://confluence.sakaiproject.org/display/DASH/Configuring+dashboard>.
 
 ## Quartz Job Configuration
