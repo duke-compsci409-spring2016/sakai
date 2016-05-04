@@ -198,7 +198,7 @@ public class AssignmentAction extends PagedResourceActionII
 	private static final Boolean allowReviewService = ServerConfigurationService.getBoolean("assignment.useContentReview", false);
 	private static final Boolean allowPeerAssessment = ServerConfigurationService.getBoolean("assignment.usePeerAssessment", true);
 	
-	/** Is the review service available? */
+	/** Is the review service available for us? */
 	//Peer Assessment
 	private static final String NEW_ASSIGNMENT_USE_PEER_ASSESSMENT= "new_assignment_use_peer_assessment";
 	private static final String NEW_ASSIGNMENT_ADDITIONAL_OPTIONS= "new_assignment_additional_options";
@@ -988,7 +988,7 @@ public class AssignmentAction extends PagedResourceActionII
 		 s = SiteService.getSite((String) state.getAttribute(STATE_CONTEXT_STRING));
 		}
 		catch (IdUnusedException iue) {
-			M_log.warn(this + ":buildMainPanelContext: Site not found!" + iue.getMessage());
+			M_log.warn(this + ":buildMainPanelContext: The Site was not found!" + iue.getMessage());
 		}
 		
 		// Check whether content review service is enabled, present and enabled for this site
