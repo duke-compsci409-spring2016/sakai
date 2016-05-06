@@ -24,7 +24,7 @@
     width: 99.5%;
     height: auto;
     margin: 0 auto 20px auto;
-    padding: 0;
+    padding: 0 .2em .5em 0;
     background: #FAFAFA;
     clear: both;
     border: 1px solid #DDD;
@@ -196,7 +196,11 @@
     margin: 0.1em 0.3em 0.1em 0;
     border:1px solid #888888;
 }
-
+/*override bootstrap definition for label css*/
+.label {
+  white-space: normal;
+  display: inline-block;
+}
 
 /** WIDGET TABS ***************** */
 /** TABS: General settings */
@@ -207,7 +211,7 @@ ul.tabnav {
     border-bottom: 1px solid #DDDFE1;
     list-style-type: none;
     padding: 3px 10px 3px 10px; /* third number with respect to padding-top (X) below in {ul.tabnav li.tabsel a} */
-    position: relative;  
+    position: relative;
 }
 ul.tabnav li {
     display: inline;
@@ -279,10 +283,10 @@ ul.tabnav li .wicket-ajax-indicator img{
 
 /** Hidden report */
 .hiddenReport {
-    background-color: #F8F8F8;	
+    background-color: #F8F8F8;
 }
 .hiddenReport a, .hiddenReport a:link{
-    color: #777;  
+    color: #777;
 }
 
 
@@ -290,7 +294,7 @@ ul.tabnav li .wicket-ajax-indicator img{
 .toolIcon {
     padding-left: 23px;
     background-repeat: no-repeat;
-    background-position: left center;  
+    background-position: left center;
 }
 
 
@@ -307,10 +311,10 @@ ul.tabnav li .wicket-ajax-indicator img{
     padding: 4px;
     color: #555;
     font-size: 11px;
-    font-weight: normal;	
+    font-weight: normal;
 }
 .summaryHeader span.itemAction {
-    font-size: 11px;	
+    font-size: 11px;
 }
 
 
@@ -357,7 +361,7 @@ table.formContainer  {
 .summaryTable .labelColumn {
     min-width: 150px;
     /* IE Dynamic Expression to set the width, ignored by other browsers */
-    width: expression(document.body.clientWidth < 300 ? "150px" : "auto" );	
+    width: expression(document.body.clientWidth < 300 ? "150px" : "auto" );
 }
 label.indnt0 {
 	font-weight: bold;
@@ -391,8 +395,8 @@ label.indnt1 {
 	font-weight: normal;
 	margin: 0pt;
 }
- 
- 
+
+
 /** Ajax loading */
 .ajaxLoading {
 	background: #ffffff url(/sitestats-tool/images/ajaxload.gif) no-repeat;
@@ -423,7 +427,7 @@ label.indnt1 {
 	margin-left: 0;
 }
 .eventTree li {
-    list-style: none;	
+    list-style: none;
 }
 .navIcon {
     cursor: pointer;
@@ -489,7 +493,7 @@ label.indnt1 {
     position: absolute;
     top: 1px;
     left: 2%;
-    width: 98%;  
+    width: 98%;
     height: 100%;
     z-index: 2;
 }
