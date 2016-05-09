@@ -50,7 +50,7 @@
 
                     #macro( displaySite $site )
                         <li class="fav-sites-entry #if (${site.isCurrentSite})is-selected #end #if (${site.isMyWorkspace})my-workspace #end">
-                            <a class="site-favorite-btn" data-site-id="${site.siteId}" href="javascript:void(0);"></a>
+                            <a class="site-favorite-btn" data-site-id="${site.siteId}" href= #if (${site.isMyWorkspace})"${site.siteUrl}" #else "javascript:void(0);" #end ></a>
 
                             <div class="fav-title">
                                 <a href="${site.siteUrl}" title="${site.siteTitleNotTruncated}">
