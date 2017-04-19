@@ -251,7 +251,7 @@ public interface MessageService extends EntityProducer, EntitySummary
 	/**
 	 * Cancel the changes made to a MessageEdit object, and release the lock. The MessageEdit is disabled, and not to be used after this call.
 	 * 
-	 * @param edit
+	 * @param user
 	 *        The MessageEdit object to cancel.
 	 */
 	public void cancelMessage(MessageEdit edit);
