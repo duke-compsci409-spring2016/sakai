@@ -1,5 +1,7 @@
 # Sakai CLE
 
+This is a sample change by Chris.
+
 This is the source code for the Sakai CLE.
 
 ## Building
